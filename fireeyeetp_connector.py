@@ -3,9 +3,6 @@
 # Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt)
 #
 
-# Python 3 Compatibility imports
-from __future__ import print_function, unicode_literals
-
 # Phantom App imports
 import phantom.app as phantom
 from phantom.base_connector import BaseConnector
@@ -23,10 +20,7 @@ import os
 import hashlib
 import pytz
 import sys
-try:
-    from urllib import unquote
-except:
-    from urllib.parse import unquote
+from urllib.parse import unquote
 
 
 class RetVal(tuple):
@@ -340,7 +334,8 @@ class FireeyeEtpConnector(BaseConnector):
         :param action results: Action results for Phantom
         :param data: dict of parameters to send to the API endpoint
         :param method: HTTP method to use when calling the API endpoint
-        :param **kwargs: Optional and additional arguments to use for calling the API endpoint. Note: these parameters need to be valid Python Requests parameters
+        :param **kwargs: Optional and additional arguments to use for calling the API endpoint.
+            Note: these parameters need to be valid Python Requests parameters
         :return: a list of alerts
         """
         items_list = list()
@@ -383,7 +378,8 @@ class FireeyeEtpConnector(BaseConnector):
         :param data: dict of parameters to send to the API endpoint
         :param limit: The number of alerts to ingest
         :param method: HTTP method to use when calling the API endpoint
-        :param **kwargs: Optional and additional arguments to use for calling the API endpoint. Note: these parameters need to be valid Python Requests parameters
+        :param **kwargs: Optional and additional arguments to use for calling the API endpoint.
+            Note: these parameters need to be valid Python Requests parameters
         :return: a list of alerts
         """
 
@@ -622,13 +618,14 @@ class FireeyeEtpConnector(BaseConnector):
                 params['attributes']['lastModifiedDateTime'] = {"value": lastModifiedDateTime.strftime("%Y-%m-%dT%H:%M:%S"), "filter": ">="}
             except:
                 return action_result.set_status(
-                    phantom.APP_ERROR, "Date supplied in the modified_date field is not ISO8601 compliant. Please make sure it is a valid ISO8601 datetime stamp")
+                    phantom.APP_ERROR, "Date supplied in the modified_date field is not ISO8601 compliant. "
+                                       "Please make sure it is a valid ISO8601 datetime stamp")
 
         recipients_param = self._handle_py_ver_compat_for_input_str(param.get("recipients"))
         if recipients_param:
             try:
                 recipients = [x.strip() for x in recipients_param.split(',')]
-                recipients = list(filter(None, recipients))
+                recipients = list([_f for _f in recipients if _f])
                 if not recipients:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'recipients' action parameter")
                 params['attributes']['recipients'] = {"value": recipients, "filter": "in", "includes": ["SMTP", "HEADER"]}
@@ -639,7 +636,7 @@ class FireeyeEtpConnector(BaseConnector):
         if sender_param:
             try:
                 sender = [x.strip() for x in sender_param.split(',')]
-                sender = list(filter(None, sender))
+                sender = list([_f for _f in sender if _f])
                 if not sender:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'sender' action parameter")
                 params['attributes']['fromEmail'] = {"value": sender, "filter": "in", "includes": ["SMTP", "HEADER"]}
@@ -650,7 +647,7 @@ class FireeyeEtpConnector(BaseConnector):
         if status_param:
             try:
                 status = [x.strip() for x in status_param.split(',')]
-                status = list(filter(None, status))
+                status = list([_f for _f in status if _f])
                 if not status:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'status' action parameter")
                 params['attributes']['status'] = {"value": status, "filter": "in"}
@@ -661,7 +658,7 @@ class FireeyeEtpConnector(BaseConnector):
         if tags_param:
             try:
                 tags = [x.strip() for x in tags_param.split(',')]
-                tags = list(filter(None, tags))
+                tags = list([_f for _f in tags if _f])
                 if not tags:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'tags' action parameter")
                 params['attributes']['tags'] = {"value": tags, "filter": "in"}
@@ -678,7 +675,7 @@ class FireeyeEtpConnector(BaseConnector):
         if domains_param:
             try:
                 domains = [x.strip() for x in domains_param.split(',')]
-                domains = list(filter(None, domains))
+                domains = list([_f for _f in domains if _f])
                 if not domains:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'domains' action parameter")
                 params['attributes']['domains'] = domains
@@ -848,7 +845,9 @@ class FireeyeEtpConnector(BaseConnector):
             data['action_override'] = action_override_param
 
             if not move_to_param:
-                action_result.set_status(phantom.APP_ERROR, "If the parameter 'action_override' is enabled the 'move_to' parameter also needs to be filled out")
+                action_result.set_status(phantom.APP_ERROR,
+                    "If the parameter 'action_override' is enabled the 'move_to' "
+                    "parameter also needs to be filled out")
                 return action_result.get_status()
             else:
                 data['move_to'] = move_to_param
@@ -911,7 +910,7 @@ class FireeyeEtpConnector(BaseConnector):
         etp_message_id_param = self._handle_py_ver_compat_for_input_str(param.get("etp_message_id"))
         try:
             ids = [x.strip() for x in etp_message_id_param.split(',')]
-            ids = list(filter(None, ids))
+            ids = list([_f for _f in ids if _f])
             if not ids:
                 return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'etp_message_id' action parameter")
             if len(ids) > 1:
@@ -951,7 +950,7 @@ class FireeyeEtpConnector(BaseConnector):
         etp_message_id_param = self._handle_py_ver_compat_for_input_str(param.get("etp_message_id"))
         try:
             ids = [x.strip() for x in etp_message_id_param.split(',')]
-            ids = list(filter(None, ids))
+            ids = list([_f for _f in ids if _f])
             if not ids:
                 return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'etp_message_id' action parameter")
             if len(ids) > 1:
@@ -1022,7 +1021,9 @@ class FireeyeEtpConnector(BaseConnector):
                 data['attributes']['date']['from_date'] = from_date
             except:
                 return action_result.set_status(
-                    phantom.APP_ERROR, "Date supplied in the from_date field is not ISO8601 compliant. Please make sure it is a valid ISO8601 datetime stamp")
+                    phantom.APP_ERROR,
+                    "Date supplied in the from_date field is not ISO8601 compliant. "
+                    "Please make sure it is a valid ISO8601 datetime stamp")
 
             # Check the 'to_date' parameter
             to_date_param = self._handle_py_ver_compat_for_input_str(param.get('to_date'))
@@ -1038,14 +1039,16 @@ class FireeyeEtpConnector(BaseConnector):
                     data['attributes']['date']['to_date'] = to_date
                 except:
                     return action_result.set_status(
-                        phantom.APP_ERROR, "Date supplied in the to_date field is not ISO8601 compliant. Please make sure it is a valid ISO8601 datetime stamp")
+                        phantom.APP_ERROR,
+                        "Date supplied in the to_date field is not ISO8601 compliant. "
+                        "Please make sure it is a valid ISO8601 datetime stamp")
 
         # Check the 'domain' parameter
         domains_param = self._handle_py_ver_compat_for_input_str(param.get("domains"))
         if domains_param:
             try:
                 domains = [x.strip() for x in domains_param.split(',')]
-                domains = list(filter(None, domains))
+                domains = list([_f for _f in domains if _f])
                 if not domains:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'domains' action parameter")
                 data['attributes']['domains'] = domains
@@ -1070,7 +1073,7 @@ class FireeyeEtpConnector(BaseConnector):
         if reason_param:
             try:
                 reason = [x.strip() for x in reason_param.split(',')]
-                reason = list(filter(None, reason))
+                reason = list([_f for _f in reason if _f])
                 if not reason:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'reason' action parameter")
                 data['attributes']['reason'] = reason
@@ -1082,7 +1085,7 @@ class FireeyeEtpConnector(BaseConnector):
         if recipients_param:
             try:
                 recipients = [x.strip() for x in recipients_param.split(',')]
-                recipients = list(filter(None, recipients))
+                recipients = list([_f for _f in recipients if _f])
                 if not recipients:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'recipients' action parameter")
                 data['attributes']['recipients'] = recipients
@@ -1110,7 +1113,7 @@ class FireeyeEtpConnector(BaseConnector):
         if tags_param:
             try:
                 tags = [x.strip() for x in tags_param.split(',')]
-                tags = list(filter(None, tags))
+                tags = list([_f for _f in tags if _f])
                 if not tags:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'tags' action parameter")
                 data['attributes']['tags'] = {}
@@ -1255,9 +1258,9 @@ class FireeyeEtpConnector(BaseConnector):
         # ETP does not provide good data to create a name or description so I am manually creating a standardized convention
 
         description = "Fireeye ETP alert on the email with the subject {} due to {} going to the user {}.".format(
-                                                                                                    alert.get('attributes', {}).get('email', {}).get('headers', {}).get('subject'),
-                                                                                                    alert.get('attributes', {}).get('meta', {}).get('last_malware'),
-                                                                                                    alert.get('attributes', {}).get('email', {}).get('headers', {}).get('to'))
+            alert.get('attributes', {}).get('email', {}).get('headers', {}).get('subject'),
+            alert.get('attributes', {}).get('meta', {}).get('last_malware'),
+            alert.get('attributes', {}).get('email', {}).get('headers', {}).get('to'))
 
         name = "Fireeye ETP Alert - {}".format(alert.get('attributes', {}).get('meta', {}).get('last_malware'))
 
@@ -1328,7 +1331,8 @@ class FireeyeEtpConnector(BaseConnector):
         return hashlib.md5(input_dict_str).hexdigest()
 
     def flatten_json(self, y):
-        """ This function is used to generate a new JSON dictionary so the data flattened to the top most values. Helps with readability of the artifacts in the GUI.
+        """ This function is used to generate a new JSON dictionary so the data flattened to the top most values.
+        Helps with readability of the artifacts in the GUI.
         :param y: JSON Dictionary of the data to flatten
         :return out: new JSON dictionary
         """
@@ -1379,7 +1383,7 @@ class FireeyeEtpConnector(BaseConnector):
         action = self.get_action_identifier()
         action_execution_status = phantom.APP_SUCCESS
 
-        if action in action_mapping.keys():
+        if action in list(action_mapping.keys()):
             action_function = action_mapping[action]
             action_execution_status = action_function(param)
         return action_execution_status
