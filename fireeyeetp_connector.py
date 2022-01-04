@@ -3,24 +3,24 @@
 # Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt)
 #
 
-# Phantom App imports
+import hashlib
+import json
+import os
+import sys
+import uuid
+from datetime import datetime, timedelta
+from urllib.parse import unquote
+
 import phantom.app as phantom
-from phantom.base_connector import BaseConnector
+import pytz
+import requests
+from bs4 import BeautifulSoup, UnicodeDammit
 from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
 from phantom.vault import Vault
 
 # Usage of the consts file is recommended
 from fireeyeetp_consts import *
-import requests
-import json
-from bs4 import BeautifulSoup, UnicodeDammit
-from datetime import datetime, timedelta
-import uuid
-import os
-import hashlib
-import pytz
-import sys
-from urllib.parse import unquote
 
 
 class RetVal(tuple):
