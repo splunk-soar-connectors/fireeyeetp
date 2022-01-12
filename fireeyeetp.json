@@ -10,7 +10,7 @@
     "python_version": "2.7",
     "product_version_regex": ".*",
     "publisher": "Robert Drouin",
-    "license": "Copyright (c) Robert Drouin, 2021",
+    "license": "Copyright (c) Robert Drouin, 2021-2022",
     "app_version": "1.0.4",
     "utctime_updated": "2021-11-10T01:28:19.000000Z",
     "package_name": "phantom_fireeyeetp",
