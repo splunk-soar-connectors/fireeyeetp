@@ -1138,7 +1138,8 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_on_poll(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        # pudb.set_trace()
+        self.debug_print('In on_poll')
+        self.debug_print(f'state: {self._state}')
 
         # Parameters for the API
         data = {}
@@ -1169,7 +1170,7 @@ class FireeyeEtpConnector(BaseConnector):
             except:
                 return action_result.set_status(phantom.APP_ERROR, "The maximum containers is invalid")
 
-            date = (timestamp - timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S.000")
+            date = (timestamp - timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
             data['fromLastModifiedOn'] = date
 
         # If it is a scheduled poll, ingest from last_ingestion_time
@@ -1184,13 +1185,15 @@ class FireeyeEtpConnector(BaseConnector):
 
             # Try to get the last_ingestion_time from the state file
             # If not get the last x minutes which is determined by the interval
-            date = self._state.get('last_ingestion_time', datetime.utcnow() - timedelta(minutes=interval_mins))
-            data['fromLastModifiedOn'] = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.000")
+            date = self._state.get('last_ingestion_time',
+                (datetime.utcnow() - timedelta(minutes=interval_mins)).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3])
+            data['fromLastModifiedOn'] = date
 
         endpoint = FIREETEETP_LIST_ALERTS_ENDPOINT
-
+        
         # make rest call
         ret_val, response = self._paginator2(endpoint, action_result, data, limit=limit, method="post")
+
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
@@ -1205,20 +1208,19 @@ class FireeyeEtpConnector(BaseConnector):
 
             for alert in response:
                 # Create a container for each alert
-                container_creation_status, container_id = self._create_container(action_result, alert)
+                #container_creation_status, container_id = self._create_container(action_result, alert)
+                container_dict = self._create_container(action_result, alert)
+                artifacts = self._create_artifacts(alert=alert)
+                container_dict['artifacts'] = artifacts
 
-                if phantom.is_fail(container_creation_status) or not container_id:
-                    self.debug_print('Error while creating container with ID {container_id}. {error_msg}'.
-                                format(container_id=container_id, error_msg=container_creation_status))
-                    continue
-                else:
-                    # Create artifacts for specific alert
-                    artifacts_creation_status, artifacts_creation_msg = self._create_artifacts(alert=alert,
-                                                                                            container_id=container_id)
+                container_creation_status, container_creation_msg, container_id = self.save_container(container=container_dict)
 
-                    if phantom.is_fail(artifacts_creation_status):
-                        self.debug_print('Error while creating artifacts for container with ID {container_id}. {error_msg}'.
-                                        format(container_id=container_id, error_msg=artifacts_creation_msg))
+                if phantom.is_fail(container_creation_status):
+                    self.debug_print(container_creation_msg)
+                    self.save_progress('Error while creating container for alert {alert_name}. '
+                                       '{error_message}'.format(alert_name=container_dict['name'], error_message=container_creation_msg))
+                    return action_result.set_status(phantom.APP_ERROR), None
+                
         else:
             self.save_progress('No alerts found')
 
@@ -1268,17 +1270,9 @@ class FireeyeEtpConnector(BaseConnector):
         container_dict['source_data_identifier'] = self._create_dict_hash(alert)
         container_dict['description'] = description
 
-        container_creation_status, container_creation_msg, container_id = self.save_container(container=container_dict)
+        return container_dict
 
-        if phantom.is_fail(container_creation_status):
-            self.debug_print(container_creation_msg)
-            self.save_progress('Error while creating container for alert {alert_name}. '
-                               '{error_message}'.format(alert_name=name, error_message=container_creation_msg))
-            return action_result.set_status(phantom.APP_ERROR), None
-
-        return action_result.set_status(phantom.APP_SUCCESS), container_id
-
-    def _create_artifacts(self, alert, container_id):
+    def _create_artifacts(self, alert):
         """ This function is used to create artifacts in given container using alert data.
         :param alert: Data of single alert
         :param container_id: ID of container in which we have to create the artifacts
@@ -1301,17 +1295,10 @@ class FireeyeEtpConnector(BaseConnector):
             temp_dict['cef'] = cef
             temp_dict['cef_types'] = cef_types
             temp_dict['name'] = alert.get('attributes', {}).get('meta', {}).get('last_malware')
-            temp_dict['container_id'] = container_id
             temp_dict['source_data_identifier'] = self._create_dict_hash(temp_dict)
 
         artifacts_list.append(temp_dict)
-
-        create_artifact_status, create_artifact_msg, _ = self.save_artifact(temp_dict)
-
-        if phantom.is_fail(create_artifact_status):
-            return self.set_status(phantom.APP_ERROR), create_artifact_msg
-
-        return self.set_status(phantom.APP_SUCCESS), 'Artifacts created successfully'
+        return artifacts_list
 
     def _create_dict_hash(self, input_dict):
         """ This function is used to generate the hash from dictionary.
@@ -1328,7 +1315,7 @@ class FireeyeEtpConnector(BaseConnector):
             self.debug_print('Handled exception in _create_dict_hash', err)
             return None
 
-        return hashlib.md5(input_dict_str).hexdigest()
+        return hashlib.md5(input_dict_str.encode('utf-8')).hexdigest()
 
     def flatten_json(self, y):
         """ This function is used to generate a new JSON dictionary so the data flattened to the top most values.
