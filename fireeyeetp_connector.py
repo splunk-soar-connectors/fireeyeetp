@@ -1317,6 +1317,22 @@ class FireeyeEtpConnector(BaseConnector):
 
         return self.set_status(phantom.APP_SUCCESS), 'Artifacts created successfully'
 
+    def _get_fips_enabled(self):
+
+        try:
+            from phantom_common.install_info import is_fips_enabled
+        except ImportError:
+            return False
+
+        fips_enabled = is_fips_enabled()
+
+        if fips_enabled:
+            self.debug_print('FIPS is enabled')
+        else:
+            self.debug_print('FIPS is not enabled')
+
+        return fips_enabled
+
     def _create_dict_hash(self, input_dict):
         """ This function is used to generate the hash from dictionary.
         :param input_dict: Dictionary for which we have to generate the hash
@@ -1332,7 +1348,10 @@ class FireeyeEtpConnector(BaseConnector):
             self.debug_print('Handled exception in _create_dict_hash', err)
             return None
 
-        return hashlib.sha256(input_dict_str).hexdigest()
+        if self._get_fips_enabled():
+            return hashlib.sha256(input_dict_str).hexdigest()
+        else:
+            return hashlib.md5(input_dict_str).hexdigest()
 
     def flatten_json(self, y):
         """ This function is used to generate a new JSON dictionary so the data flattened to the top most values.
