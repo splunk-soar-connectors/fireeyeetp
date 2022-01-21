@@ -6,23 +6,25 @@
 # Python 3 Compatibility imports
 from __future__ import print_function, unicode_literals
 
+import hashlib
+import json
+import os
+import sys
+import uuid
+from datetime import datetime, timedelta
+
 # Phantom App imports
 import phantom.app as phantom
-from phantom.base_connector import BaseConnector
+import pytz
+import requests
+from bs4 import BeautifulSoup, UnicodeDammit
 from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
 from phantom.vault import Vault
 
 # Usage of the consts file is recommended
 from fireeyeetp_consts import *
-import requests
-import json
-from bs4 import BeautifulSoup, UnicodeDammit
-from datetime import datetime, timedelta
-import uuid
-import os
-import hashlib
-import pytz
-import sys
+
 try:
     from urllib import unquote
 except:
@@ -135,9 +137,8 @@ class FireeyeEtpConnector(BaseConnector):
 
         return RetVal(
             action_result.set_status(
-                phantom.APP_ERROR, "Status Code: {}. Error: Empty response and no information in the header".format(response.status_code)
-            ), None
-        )
+                phantom.APP_ERROR, "Status Code: {}. Error: Empty response and no information in the header".format(
+                    response.status_code)), None)
 
     def _process_html_response(self, response, action_result):
         # An html response, treat it like an error
@@ -336,11 +337,13 @@ class FireeyeEtpConnector(BaseConnector):
 
     def _paginator(self, endpoint, action_result, data, method="get", **kwargs):
         """ This function is used to handle the gathering of alerts for the list alerts action.
+            Note: the parameters need to be valid Python Requests parameters
+
         :param endpoint: API endpoint to use to get the alerts
         :param action results: Action results for Phantom
         :param data: dict of parameters to send to the API endpoint
         :param method: HTTP method to use when calling the API endpoint
-        :param **kwargs: Optional and additional arguments to use for calling the API endpoint. Note: these parameters need to be valid Python Requests parameters
+        :param **kwargs: Optional and additional arguments to use for calling the API endpoint.
         :return: a list of alerts
         """
         items_list = list()
@@ -378,12 +381,14 @@ class FireeyeEtpConnector(BaseConnector):
 
     def _paginator2(self, endpoint, action_result, data, limit=None, method="get", **kwargs):
         """ This function is used to handle the gathering of alerts for the on_poll action.
+            Note: these parameters need to be valid Python Requests parameters
+
         :param endpoint: API endpoint to use to get the alerts
         :param action results: Action results for Phantom
         :param data: dict of parameters to send to the API endpoint
         :param limit: The number of alerts to ingest
         :param method: HTTP method to use when calling the API endpoint
-        :param **kwargs: Optional and additional arguments to use for calling the API endpoint. Note: these parameters need to be valid Python Requests parameters
+        :param **kwargs: Optional and additional arguments to use for calling the API endpoint.
         :return: a list of alerts
         """
 
@@ -507,7 +512,8 @@ class FireeyeEtpConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         try:
-            endpoint = FIREETEETP_GET_ALERT_ENDPOINT.format(alertId=self._handle_py_ver_compat_for_input_str(param.get('alert_id')))
+            endpoint = FIREETEETP_GET_ALERT_ENDPOINT.format(
+                    alertId=self._handle_py_ver_compat_for_input_str(param.get('alert_id')))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'alert_id' action parameter")
 
@@ -619,10 +625,10 @@ class FireeyeEtpConnector(BaseConnector):
             try:
                 lastModifiedDateTime = modified_date_param.strip()
                 lastModifiedDateTime = datetime.strptime(lastModifiedDateTime, "%Y-%m-%dT%H:%M:%S")
-                params['attributes']['lastModifiedDateTime'] = {"value": lastModifiedDateTime.strftime("%Y-%m-%dT%H:%M:%S"), "filter": ">="}
+                params['attributes']['lastModifiedDateTime'] = {"value": lastModifiedDateTime.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "filter": ">="}
             except:
-                return action_result.set_status(
-                    phantom.APP_ERROR, "Date supplied in the modified_date field is not ISO8601 compliant. Please make sure it is a valid ISO8601 datetime stamp")
+                return action_result.set_status(phantom.APP_ERROR, ERR_ISO_FORMAT)
 
         recipients_param = self._handle_py_ver_compat_for_input_str(param.get("recipients"))
         if recipients_param:
@@ -848,7 +854,8 @@ class FireeyeEtpConnector(BaseConnector):
             data['action_override'] = action_override_param
 
             if not move_to_param:
-                action_result.set_status(phantom.APP_ERROR, "If the parameter 'action_override' is enabled the 'move_to' parameter also needs to be filled out")
+                action_result.set_status(phantom.APP_ERROR,
+                        "If the parameter 'action_override' is enabled the 'move_to' parameter also needs to be filled out")
                 return action_result.get_status()
             else:
                 data['move_to'] = move_to_param
@@ -1021,8 +1028,7 @@ class FireeyeEtpConnector(BaseConnector):
                 data['attributes']['date'] = {}
                 data['attributes']['date']['from_date'] = from_date
             except:
-                return action_result.set_status(
-                    phantom.APP_ERROR, "Date supplied in the from_date field is not ISO8601 compliant. Please make sure it is a valid ISO8601 datetime stamp")
+                return action_result.set_status(phantom.APP_ERROR, ERR_ISO_FORMAT)
 
             # Check the 'to_date' parameter
             to_date_param = self._handle_py_ver_compat_for_input_str(param.get('to_date'))
@@ -1037,8 +1043,7 @@ class FireeyeEtpConnector(BaseConnector):
                     data['attributes']['date'] = {}
                     data['attributes']['date']['to_date'] = to_date
                 except:
-                    return action_result.set_status(
-                        phantom.APP_ERROR, "Date supplied in the to_date field is not ISO8601 compliant. Please make sure it is a valid ISO8601 datetime stamp")
+                    return action_result.set_status(phantom.APP_ERROR, ERR_ISO_FORMAT)
 
         # Check the 'domain' parameter
         domains_param = self._handle_py_ver_compat_for_input_str(param.get("domains"))
@@ -1150,7 +1155,8 @@ class FireeyeEtpConnector(BaseConnector):
             # Get the endtime from Phantom which is when the action was ran
             timestamp = datetime.utcfromtimestamp(param.get(phantom.APP_JSON_END_TIME) / 1000.0)
         except:
-            self.debug_print("'end_time' in Phantom could not be converted correctly. Use alternative time equal to datetime.utcnow()")
+            self.debug_print(
+                    "'end_time' in Phantom could not be converted correctly. Use alternative time equal to datetime.utcnow()")
         else:
             timestamp = datetime.utcnow()
 
@@ -1160,7 +1166,8 @@ class FireeyeEtpConnector(BaseConnector):
             try:
                 # Check the 'container_count' parameter
                 # If container count is not present just get 1
-                ret_val, limit = self._validate_integer(action_result, param.get(phantom.APP_JSON_CONTAINER_COUNT, 1), CONTAINER_COUNT_KEY)
+                ret_val, limit = self._validate_integer(action_result,
+                        param.get(phantom.APP_JSON_CONTAINER_COUNT, 1), CONTAINER_COUNT_KEY)
                 if phantom.is_fail(ret_val):
                     return action_result.get_status()
             except:
@@ -1255,9 +1262,9 @@ class FireeyeEtpConnector(BaseConnector):
         # ETP does not provide good data to create a name or description so I am manually creating a standardized convention
 
         description = "Fireeye ETP alert on the email with the subject {} due to {} going to the user {}.".format(
-                                                                                                    alert.get('attributes', {}).get('email', {}).get('headers', {}).get('subject'),
-                                                                                                    alert.get('attributes', {}).get('meta', {}).get('last_malware'),
-                                                                                                    alert.get('attributes', {}).get('email', {}).get('headers', {}).get('to'))
+                                                alert.get('attributes', {}).get('email', {}).get('headers', {}).get('subject'),
+                                                alert.get('attributes', {}).get('meta', {}).get('last_malware'),
+                                                alert.get('attributes', {}).get('email', {}).get('headers', {}).get('to'))
 
         name = "Fireeye ETP Alert - {}".format(alert.get('attributes', {}).get('meta', {}).get('last_malware'))
 
@@ -1310,6 +1317,22 @@ class FireeyeEtpConnector(BaseConnector):
 
         return self.set_status(phantom.APP_SUCCESS), 'Artifacts created successfully'
 
+    def _get_fips_enabled(self):
+
+        try:
+            from phantom_common.install_info import is_fips_enabled
+        except ImportError:
+            return False
+
+        fips_enabled = is_fips_enabled()
+
+        if fips_enabled:
+            self.debug_print('FIPS is enabled')
+        else:
+            self.debug_print('FIPS is not enabled')
+
+        return fips_enabled
+
     def _create_dict_hash(self, input_dict):
         """ This function is used to generate the hash from dictionary.
         :param input_dict: Dictionary for which we have to generate the hash
@@ -1325,10 +1348,15 @@ class FireeyeEtpConnector(BaseConnector):
             self.debug_print('Handled exception in _create_dict_hash', err)
             return None
 
-        return hashlib.md5(input_dict_str).hexdigest()
+        if self._get_fips_enabled():
+            return hashlib.sha256(input_dict_str).hexdigest()
+        else:
+            return hashlib.md5(input_dict_str).hexdigest()
 
     def flatten_json(self, y):
-        """ This function is used to generate a new JSON dictionary so the data flattened to the top most values. Helps with readability of the artifacts in the GUI.
+        """ This function is used to generate a new JSON dictionary so the data flattened to the top most values.
+            Helps with readability of the artifacts in the GUI.
+
         :param y: JSON Dictionary of the data to flatten
         :return out: new JSON dictionary
         """
