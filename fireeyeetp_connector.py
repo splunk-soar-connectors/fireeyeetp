@@ -1,6 +1,17 @@
-# File: fireeye_connector.py
+# File: fireeyeetp_connector.py
 #
-# Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt)
+# Copyright (c) Robert Drouin, 2021-2022
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied. See the License for the specific language governing permissions
+# and limitations under the License.
 #
 
 import hashlib
@@ -58,41 +69,29 @@ class FireeyeEtpConnector(BaseConnector):
         return input_str
 
     def _get_error_message_from_exception(self, e):
-        """ This method is used to get appropriate error messages from the exception.
+        """
+        Get appropriate error message from the exception.
         :param e: Exception object
         :return: error message
         """
 
+        error_code = None
+        error_msg = ERR_MSG_UNAVAILABLE
+
         try:
-            if e.args:
+            if hasattr(e, "args"):
                 if len(e.args) > 1:
                     error_code = e.args[0]
                     error_msg = e.args[1]
                 elif len(e.args) == 1:
-                    error_code = ERR_CODE_MSG
                     error_msg = e.args[0]
-            else:
-                error_code = ERR_CODE_MSG
-                error_msg = ERR_MSG_UNAVAILABLE
         except:
-            error_code = ERR_CODE_MSG
-            error_msg = ERR_MSG_UNAVAILABLE
+            pass
 
-        try:
-            error_msg = self._handle_py_ver_compat_for_input_str(error_msg)
-        except TypeError:
-            error_msg = TYPE_ERR_MSG
-        except:
-            error_msg = ERR_MSG_UNAVAILABLE
-
-        try:
-            if error_code in ERR_CODE_MSG:
-                error_text = "Error Message: {0}".format(error_msg)
-            else:
-                error_text = "Error Code: {0}. Error Message: {1}".format(error_code, error_msg)
-        except:
-            self.debug_print(PARSE_ERR_MSG)
-            error_text = PARSE_ERR_MSG
+        if not error_code:
+            error_text = "Error Message: {}".format(error_msg)
+        else:
+            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
 
         return error_text
 
@@ -124,7 +123,7 @@ class FireeyeEtpConnector(BaseConnector):
         return phantom.APP_SUCCESS, parameter
 
     def _process_empty_response(self, response, action_result):
-        if response.status_code == 200:
+        if response.status_code == 200 or response.status_code == 204:
             return RetVal(phantom.APP_SUCCESS, {})
 
         return RetVal(
@@ -551,7 +550,7 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_get_email_attributes(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param.get('etp_message_id'))
+        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param['etp_message_id'])
         try:
             endpoint = FIREETEETP_GET_MESSAGE_ATTRIBUTES_ENDPOINT.format(etp_message_id=etp_message_id_param)
         except Exception:
@@ -706,7 +705,7 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_download_email(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param.get("etp_message_id"))
+        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param["etp_message_id"])
 
         # Set the file name for the vault
         try:
@@ -738,7 +737,7 @@ class FireeyeEtpConnector(BaseConnector):
         # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        alert_id_param = self._handle_py_ver_compat_for_input_str(param.get("alert_id"))
+        alert_id_param = self._handle_py_ver_compat_for_input_str(param["alert_id"])
 
         data = {}
 
@@ -771,7 +770,7 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_download_malware_files(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        alert_id_param = self._handle_py_ver_compat_for_input_str(param.get("alert_id"))
+        alert_id_param = self._handle_py_ver_compat_for_input_str(param["alert_id"])
 
         data = {}
 
@@ -804,7 +803,7 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_download_case_files(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        alert_id_param = self._handle_py_ver_compat_for_input_str(param.get("alert_id"))
+        alert_id_param = self._handle_py_ver_compat_for_input_str(param["alert_id"])
 
         data = {}
 
@@ -853,7 +852,7 @@ class FireeyeEtpConnector(BaseConnector):
                 data['move_to'] = move_to_param
 
         try:
-            data['message_ids'] = ",".join(self._handle_py_ver_compat_for_input_str(param.get('etp_message_ids')))
+            data['message_ids'] = ",".join(self._handle_py_ver_compat_for_input_str(param['etp_message_ids']))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'etp_message_ids' action parameter")
 
@@ -875,7 +874,7 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_get_quarantined_email(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param.get("etp_message_id"))
+        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param["etp_message_id"])
         # Set the file name for the vault
         try:
             filename = "quarantined_email_{}.txt".format(etp_message_id_param)
@@ -1190,7 +1189,7 @@ class FireeyeEtpConnector(BaseConnector):
             data['fromLastModifiedOn'] = date
 
         endpoint = FIREETEETP_LIST_ALERTS_ENDPOINT
-        
+
         # make rest call
         ret_val, response = self._paginator2(endpoint, action_result, data, limit=limit, method="post")
 
@@ -1208,7 +1207,7 @@ class FireeyeEtpConnector(BaseConnector):
 
             for alert in response:
                 # Create a container for each alert
-                #container_creation_status, container_id = self._create_container(action_result, alert)
+                # container_creation_status, container_id = self._create_container(action_result, alert)
                 container_dict = self._create_container(action_result, alert)
                 artifacts = self._create_artifacts(alert=alert)
                 container_dict['artifacts'] = artifacts
@@ -1220,7 +1219,7 @@ class FireeyeEtpConnector(BaseConnector):
                     self.save_progress('Error while creating container for alert {alert_name}. '
                                        '{error_message}'.format(alert_name=container_dict['name'], error_message=container_creation_msg))
                     return action_result.set_status(phantom.APP_ERROR), None
-                
+
         else:
             self.save_progress('No alerts found')
 
@@ -1384,6 +1383,12 @@ class FireeyeEtpConnector(BaseConnector):
             self._state = self.load_state()
         else:
             self._state = self._load_state()
+        if not isinstance(self._state, dict):
+            self.debug_print("Resetting the state file with the default format")
+            self._state = {
+                "app_version": self.get_app_json().get('app_version')
+            }
+            return self.set_status(phantom.APP_ERROR, FIREEYEETP_VAULT_STATE_FILE_CORRUPT_ERR)
 
         # Fetching the Python major version
         try:
