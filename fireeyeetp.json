@@ -9,6 +9,7 @@
     "product_name": "Fireeye Email Threat Prevention",
     "python_version": "3",
     "product_version_regex": ".*",
+    "fips_compliant": false,
     "publisher": "Robert Drouin",
     "license": "Copyright (c) Robert Drouin, 2021-2022",
     "app_version": "2.0.0",
