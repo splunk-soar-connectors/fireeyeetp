@@ -7,12 +7,13 @@
     "logo": "logo_fireeyeetp.svg",
     "logo_dark": "logo_fireeyeetp_dark.svg",
     "product_name": "Fireeye Email Threat Prevention",
-    "python_version": "2.7",
+    "python_version": "3",
     "product_version_regex": ".*",
+    "fips_compliant": false,
     "publisher": "Robert Drouin",
     "license": "Copyright (c) Robert Drouin, 2021-2022",
-    "app_version": "1.1.1",
-    "utctime_updated": "2022-01-21T22:12:15.000000Z",
+    "app_version": "2.0.0",
+    "utctime_updated": "2021-11-10T01:28:19.000000Z",
     "package_name": "phantom_fireeyeetp",
     "main_module": "fireeyeetp_connector.py",
     "min_phantom_version": "5.0.0",
@@ -3465,7 +3466,7 @@
             },
             {
                 "module": "beautifulsoup4",
-                "input_file": "wheels/beautifulsoup4-4.9.1-py2-none-any.whl"
+                "input_file": "wheels/beautifulsoup4-4.10.0-py3-none-any.whl"
             },
             {
                 "module": "certifi",
@@ -3489,7 +3490,7 @@
             },
             {
                 "module": "soupsieve",
-                "input_file": "wheels/soupsieve-1.9.6-py2.py3-none-any.whl"
+                "input_file": "wheels/soupsieve-2.3.1-py3-none-any.whl"
             },
             {
                 "module": "urllib3",

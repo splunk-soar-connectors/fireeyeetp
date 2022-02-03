@@ -1,10 +1,18 @@
-# File: fireeye_connector.py
+# File: fireeyeetp_connector.py
 #
-# Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt)
+# Copyright (c) Robert Drouin, 2021-2022
 #
-
-# Python 3 Compatibility imports
-from __future__ import print_function, unicode_literals
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied. See the License for the specific language governing permissions
+# and limitations under the License.
+#
 
 import hashlib
 import json
@@ -12,8 +20,8 @@ import os
 import sys
 import uuid
 from datetime import datetime, timedelta
+from urllib.parse import unquote
 
-# Phantom App imports
 import phantom.app as phantom
 import pytz
 import requests
@@ -24,11 +32,6 @@ from phantom.vault import Vault
 
 # Usage of the consts file is recommended
 from fireeyeetp_consts import *
-
-try:
-    from urllib import unquote
-except:
-    from urllib.parse import unquote
 
 
 class RetVal(tuple):
@@ -66,41 +69,29 @@ class FireeyeEtpConnector(BaseConnector):
         return input_str
 
     def _get_error_message_from_exception(self, e):
-        """ This method is used to get appropriate error messages from the exception.
+        """
+        Get appropriate error message from the exception.
         :param e: Exception object
         :return: error message
         """
 
+        error_code = None
+        error_msg = ERR_MSG_UNAVAILABLE
+
         try:
-            if e.args:
+            if hasattr(e, "args"):
                 if len(e.args) > 1:
                     error_code = e.args[0]
                     error_msg = e.args[1]
                 elif len(e.args) == 1:
-                    error_code = ERR_CODE_MSG
                     error_msg = e.args[0]
-            else:
-                error_code = ERR_CODE_MSG
-                error_msg = ERR_MSG_UNAVAILABLE
         except:
-            error_code = ERR_CODE_MSG
-            error_msg = ERR_MSG_UNAVAILABLE
+            pass
 
-        try:
-            error_msg = self._handle_py_ver_compat_for_input_str(error_msg)
-        except TypeError:
-            error_msg = TYPE_ERR_MSG
-        except:
-            error_msg = ERR_MSG_UNAVAILABLE
-
-        try:
-            if error_code in ERR_CODE_MSG:
-                error_text = "Error Message: {0}".format(error_msg)
-            else:
-                error_text = "Error Code: {0}. Error Message: {1}".format(error_code, error_msg)
-        except:
-            self.debug_print(PARSE_ERR_MSG)
-            error_text = PARSE_ERR_MSG
+        if not error_code:
+            error_text = "Error Message: {}".format(error_msg)
+        else:
+            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
 
         return error_text
 
@@ -132,7 +123,7 @@ class FireeyeEtpConnector(BaseConnector):
         return phantom.APP_SUCCESS, parameter
 
     def _process_empty_response(self, response, action_result):
-        if response.status_code == 200:
+        if response.status_code == 200 or response.status_code == 204:
             return RetVal(phantom.APP_SUCCESS, {})
 
         return RetVal(
@@ -344,6 +335,7 @@ class FireeyeEtpConnector(BaseConnector):
         :param data: dict of parameters to send to the API endpoint
         :param method: HTTP method to use when calling the API endpoint
         :param **kwargs: Optional and additional arguments to use for calling the API endpoint.
+            Note: these parameters need to be valid Python Requests parameters
         :return: a list of alerts
         """
         items_list = list()
@@ -389,6 +381,7 @@ class FireeyeEtpConnector(BaseConnector):
         :param limit: The number of alerts to ingest
         :param method: HTTP method to use when calling the API endpoint
         :param **kwargs: Optional and additional arguments to use for calling the API endpoint.
+            Note: these parameters need to be valid Python Requests parameters
         :return: a list of alerts
         """
 
@@ -561,7 +554,7 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_get_email_attributes(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param.get('etp_message_id'))
+        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param['etp_message_id'])
         try:
             endpoint = FIREETEETP_GET_MESSAGE_ATTRIBUTES_ENDPOINT.format(etp_message_id=etp_message_id_param)
         except Exception:
@@ -628,13 +621,15 @@ class FireeyeEtpConnector(BaseConnector):
                 params['attributes']['lastModifiedDateTime'] = {"value": lastModifiedDateTime.strftime("%Y-%m-%dT%H:%M:%S"),
                         "filter": ">="}
             except:
-                return action_result.set_status(phantom.APP_ERROR, ERR_ISO_FORMAT)
+                return action_result.set_status(
+                    phantom.APP_ERROR, "Date supplied in the modified_date field is not ISO8601 compliant. "
+                                       "Please make sure it is a valid ISO8601 datetime stamp")
 
         recipients_param = self._handle_py_ver_compat_for_input_str(param.get("recipients"))
         if recipients_param:
             try:
                 recipients = [x.strip() for x in recipients_param.split(',')]
-                recipients = list(filter(None, recipients))
+                recipients = list([_f for _f in recipients if _f])
                 if not recipients:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'recipients' action parameter")
                 params['attributes']['recipients'] = {"value": recipients, "filter": "in", "includes": ["SMTP", "HEADER"]}
@@ -645,7 +640,7 @@ class FireeyeEtpConnector(BaseConnector):
         if sender_param:
             try:
                 sender = [x.strip() for x in sender_param.split(',')]
-                sender = list(filter(None, sender))
+                sender = list([_f for _f in sender if _f])
                 if not sender:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'sender' action parameter")
                 params['attributes']['fromEmail'] = {"value": sender, "filter": "in", "includes": ["SMTP", "HEADER"]}
@@ -656,7 +651,7 @@ class FireeyeEtpConnector(BaseConnector):
         if status_param:
             try:
                 status = [x.strip() for x in status_param.split(',')]
-                status = list(filter(None, status))
+                status = list([_f for _f in status if _f])
                 if not status:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'status' action parameter")
                 params['attributes']['status'] = {"value": status, "filter": "in"}
@@ -667,7 +662,7 @@ class FireeyeEtpConnector(BaseConnector):
         if tags_param:
             try:
                 tags = [x.strip() for x in tags_param.split(',')]
-                tags = list(filter(None, tags))
+                tags = list([_f for _f in tags if _f])
                 if not tags:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'tags' action parameter")
                 params['attributes']['tags'] = {"value": tags, "filter": "in"}
@@ -684,7 +679,7 @@ class FireeyeEtpConnector(BaseConnector):
         if domains_param:
             try:
                 domains = [x.strip() for x in domains_param.split(',')]
-                domains = list(filter(None, domains))
+                domains = list([_f for _f in domains if _f])
                 if not domains:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'domains' action parameter")
                 params['attributes']['domains'] = domains
@@ -715,7 +710,7 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_download_email(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param.get("etp_message_id"))
+        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param["etp_message_id"])
 
         # Set the file name for the vault
         try:
@@ -747,7 +742,7 @@ class FireeyeEtpConnector(BaseConnector):
         # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        alert_id_param = self._handle_py_ver_compat_for_input_str(param.get("alert_id"))
+        alert_id_param = self._handle_py_ver_compat_for_input_str(param["alert_id"])
 
         data = {}
 
@@ -780,7 +775,7 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_download_malware_files(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        alert_id_param = self._handle_py_ver_compat_for_input_str(param.get("alert_id"))
+        alert_id_param = self._handle_py_ver_compat_for_input_str(param["alert_id"])
 
         data = {}
 
@@ -813,7 +808,7 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_download_case_files(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        alert_id_param = self._handle_py_ver_compat_for_input_str(param.get("alert_id"))
+        alert_id_param = self._handle_py_ver_compat_for_input_str(param["alert_id"])
 
         data = {}
 
@@ -855,13 +850,14 @@ class FireeyeEtpConnector(BaseConnector):
 
             if not move_to_param:
                 action_result.set_status(phantom.APP_ERROR,
-                        "If the parameter 'action_override' is enabled the 'move_to' parameter also needs to be filled out")
+                    "If the parameter 'action_override' is enabled the 'move_to' "
+                    "parameter also needs to be filled out")
                 return action_result.get_status()
             else:
                 data['move_to'] = move_to_param
 
         try:
-            data['message_ids'] = ",".join(self._handle_py_ver_compat_for_input_str(param.get('etp_message_ids')))
+            data['message_ids'] = ",".join(self._handle_py_ver_compat_for_input_str(param['etp_message_ids']))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'etp_message_ids' action parameter")
 
@@ -883,7 +879,7 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_get_quarantined_email(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param.get("etp_message_id"))
+        etp_message_id_param = self._handle_py_ver_compat_for_input_str(param["etp_message_id"])
         # Set the file name for the vault
         try:
             filename = "quarantined_email_{}.txt".format(etp_message_id_param)
@@ -918,7 +914,7 @@ class FireeyeEtpConnector(BaseConnector):
         etp_message_id_param = self._handle_py_ver_compat_for_input_str(param.get("etp_message_id"))
         try:
             ids = [x.strip() for x in etp_message_id_param.split(',')]
-            ids = list(filter(None, ids))
+            ids = list([_f for _f in ids if _f])
             if not ids:
                 return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'etp_message_id' action parameter")
             if len(ids) > 1:
@@ -958,7 +954,7 @@ class FireeyeEtpConnector(BaseConnector):
         etp_message_id_param = self._handle_py_ver_compat_for_input_str(param.get("etp_message_id"))
         try:
             ids = [x.strip() for x in etp_message_id_param.split(',')]
-            ids = list(filter(None, ids))
+            ids = list([_f for _f in ids if _f])
             if not ids:
                 return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'etp_message_id' action parameter")
             if len(ids) > 1:
@@ -1028,7 +1024,10 @@ class FireeyeEtpConnector(BaseConnector):
                 data['attributes']['date'] = {}
                 data['attributes']['date']['from_date'] = from_date
             except:
-                return action_result.set_status(phantom.APP_ERROR, ERR_ISO_FORMAT)
+                return action_result.set_status(
+                    phantom.APP_ERROR,
+                    "Date supplied in the from_date field is not ISO8601 compliant. "
+                    "Please make sure it is a valid ISO8601 datetime stamp")
 
             # Check the 'to_date' parameter
             to_date_param = self._handle_py_ver_compat_for_input_str(param.get('to_date'))
@@ -1043,14 +1042,17 @@ class FireeyeEtpConnector(BaseConnector):
                     data['attributes']['date'] = {}
                     data['attributes']['date']['to_date'] = to_date
                 except:
-                    return action_result.set_status(phantom.APP_ERROR, ERR_ISO_FORMAT)
+                    return action_result.set_status(
+                        phantom.APP_ERROR,
+                        "Date supplied in the to_date field is not ISO8601 compliant. "
+                        "Please make sure it is a valid ISO8601 datetime stamp")
 
         # Check the 'domain' parameter
         domains_param = self._handle_py_ver_compat_for_input_str(param.get("domains"))
         if domains_param:
             try:
                 domains = [x.strip() for x in domains_param.split(',')]
-                domains = list(filter(None, domains))
+                domains = list([_f for _f in domains if _f])
                 if not domains:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'domains' action parameter")
                 data['attributes']['domains'] = domains
@@ -1075,7 +1077,7 @@ class FireeyeEtpConnector(BaseConnector):
         if reason_param:
             try:
                 reason = [x.strip() for x in reason_param.split(',')]
-                reason = list(filter(None, reason))
+                reason = list([_f for _f in reason if _f])
                 if not reason:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'reason' action parameter")
                 data['attributes']['reason'] = reason
@@ -1087,7 +1089,7 @@ class FireeyeEtpConnector(BaseConnector):
         if recipients_param:
             try:
                 recipients = [x.strip() for x in recipients_param.split(',')]
-                recipients = list(filter(None, recipients))
+                recipients = list([_f for _f in recipients if _f])
                 if not recipients:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'recipients' action parameter")
                 data['attributes']['recipients'] = recipients
@@ -1115,7 +1117,7 @@ class FireeyeEtpConnector(BaseConnector):
         if tags_param:
             try:
                 tags = [x.strip() for x in tags_param.split(',')]
-                tags = list(filter(None, tags))
+                tags = list([_f for _f in tags if _f])
                 if not tags:
                     return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'tags' action parameter")
                 data['attributes']['tags'] = {}
@@ -1140,7 +1142,8 @@ class FireeyeEtpConnector(BaseConnector):
     def _handle_on_poll(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        # pudb.set_trace()
+        self.debug_print('In on_poll')
+        self.debug_print(f'state: {self._state}')
 
         # Parameters for the API
         data = {}
@@ -1173,7 +1176,7 @@ class FireeyeEtpConnector(BaseConnector):
             except:
                 return action_result.set_status(phantom.APP_ERROR, "The maximum containers is invalid")
 
-            date = (timestamp - timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S.000")
+            date = (timestamp - timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
             data['fromLastModifiedOn'] = date
 
         # If it is a scheduled poll, ingest from last_ingestion_time
@@ -1188,13 +1191,15 @@ class FireeyeEtpConnector(BaseConnector):
 
             # Try to get the last_ingestion_time from the state file
             # If not get the last x minutes which is determined by the interval
-            date = self._state.get('last_ingestion_time', datetime.utcnow() - timedelta(minutes=interval_mins))
-            data['fromLastModifiedOn'] = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.000")
+            date = self._state.get('last_ingestion_time',
+                (datetime.utcnow() - timedelta(minutes=interval_mins)).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3])
+            data['fromLastModifiedOn'] = date
 
         endpoint = FIREETEETP_LIST_ALERTS_ENDPOINT
 
         # make rest call
         ret_val, response = self._paginator2(endpoint, action_result, data, limit=limit, method="post")
+
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
@@ -1209,20 +1214,19 @@ class FireeyeEtpConnector(BaseConnector):
 
             for alert in response:
                 # Create a container for each alert
-                container_creation_status, container_id = self._create_container(action_result, alert)
+                # container_creation_status, container_id = self._create_container(action_result, alert)
+                container_dict = self._create_container(action_result, alert)
+                artifacts = self._create_artifacts(alert=alert)
+                container_dict['artifacts'] = artifacts
 
-                if phantom.is_fail(container_creation_status) or not container_id:
-                    self.debug_print('Error while creating container with ID {container_id}. {error_msg}'.
-                                format(container_id=container_id, error_msg=container_creation_status))
-                    continue
-                else:
-                    # Create artifacts for specific alert
-                    artifacts_creation_status, artifacts_creation_msg = self._create_artifacts(alert=alert,
-                                                                                            container_id=container_id)
+                container_creation_status, container_creation_msg, container_id = self.save_container(container=container_dict)
 
-                    if phantom.is_fail(artifacts_creation_status):
-                        self.debug_print('Error while creating artifacts for container with ID {container_id}. {error_msg}'.
-                                        format(container_id=container_id, error_msg=artifacts_creation_msg))
+                if phantom.is_fail(container_creation_status):
+                    self.debug_print(container_creation_msg)
+                    self.save_progress('Error while creating container for alert {alert_name}. '
+                                       '{error_message}'.format(alert_name=container_dict['name'], error_message=container_creation_msg))
+                    return action_result.set_status(phantom.APP_ERROR), None
+
         else:
             self.save_progress('No alerts found')
 
@@ -1262,9 +1266,9 @@ class FireeyeEtpConnector(BaseConnector):
         # ETP does not provide good data to create a name or description so I am manually creating a standardized convention
 
         description = "Fireeye ETP alert on the email with the subject {} due to {} going to the user {}.".format(
-                                                alert.get('attributes', {}).get('email', {}).get('headers', {}).get('subject'),
-                                                alert.get('attributes', {}).get('meta', {}).get('last_malware'),
-                                                alert.get('attributes', {}).get('email', {}).get('headers', {}).get('to'))
+            alert.get('attributes', {}).get('email', {}).get('headers', {}).get('subject'),
+            alert.get('attributes', {}).get('meta', {}).get('last_malware'),
+            alert.get('attributes', {}).get('email', {}).get('headers', {}).get('to'))
 
         name = "Fireeye ETP Alert - {}".format(alert.get('attributes', {}).get('meta', {}).get('last_malware'))
 
@@ -1272,17 +1276,9 @@ class FireeyeEtpConnector(BaseConnector):
         container_dict['source_data_identifier'] = self._create_dict_hash(alert)
         container_dict['description'] = description
 
-        container_creation_status, container_creation_msg, container_id = self.save_container(container=container_dict)
+        return container_dict
 
-        if phantom.is_fail(container_creation_status):
-            self.debug_print(container_creation_msg)
-            self.save_progress('Error while creating container for alert {alert_name}. '
-                               '{error_message}'.format(alert_name=name, error_message=container_creation_msg))
-            return action_result.set_status(phantom.APP_ERROR), None
-
-        return action_result.set_status(phantom.APP_SUCCESS), container_id
-
-    def _create_artifacts(self, alert, container_id):
+    def _create_artifacts(self, alert):
         """ This function is used to create artifacts in given container using alert data.
         :param alert: Data of single alert
         :param container_id: ID of container in which we have to create the artifacts
@@ -1305,17 +1301,10 @@ class FireeyeEtpConnector(BaseConnector):
             temp_dict['cef'] = cef
             temp_dict['cef_types'] = cef_types
             temp_dict['name'] = alert.get('attributes', {}).get('meta', {}).get('last_malware')
-            temp_dict['container_id'] = container_id
             temp_dict['source_data_identifier'] = self._create_dict_hash(temp_dict)
 
         artifacts_list.append(temp_dict)
-
-        create_artifact_status, create_artifact_msg, _ = self.save_artifact(temp_dict)
-
-        if phantom.is_fail(create_artifact_status):
-            return self.set_status(phantom.APP_ERROR), create_artifact_msg
-
-        return self.set_status(phantom.APP_SUCCESS), 'Artifacts created successfully'
+        return artifacts_list
 
     def _get_fips_enabled(self):
 
@@ -1348,15 +1337,11 @@ class FireeyeEtpConnector(BaseConnector):
             self.debug_print('Handled exception in _create_dict_hash', err)
             return None
 
-        if self._get_fips_enabled():
-            return hashlib.sha256(input_dict_str).hexdigest()
-        else:
-            return hashlib.md5(input_dict_str).hexdigest()
+        return hashlib.md5(input_dict_str.encode('utf-8')).hexdigest()
 
     def flatten_json(self, y):
         """ This function is used to generate a new JSON dictionary so the data flattened to the top most values.
-            Helps with readability of the artifacts in the GUI.
-
+        Helps with readability of the artifacts in the GUI.
         :param y: JSON Dictionary of the data to flatten
         :return out: new JSON dictionary
         """
@@ -1407,7 +1392,7 @@ class FireeyeEtpConnector(BaseConnector):
         action = self.get_action_identifier()
         action_execution_status = phantom.APP_SUCCESS
 
-        if action in action_mapping.keys():
+        if action in list(action_mapping.keys()):
             action_function = action_mapping[action]
             action_execution_status = action_function(param)
         return action_execution_status
@@ -1421,6 +1406,12 @@ class FireeyeEtpConnector(BaseConnector):
             self._state = self.load_state()
         else:
             self._state = self._load_state()
+        if not isinstance(self._state, dict):
+            self.debug_print("Resetting the state file with the default format")
+            self._state = {
+                "app_version": self.get_app_json().get('app_version')
+            }
+            return self.set_status(phantom.APP_ERROR, FIREEYEETP_VAULT_STATE_FILE_CORRUPT_ERR)
 
         # Fetching the Python major version
         try:
