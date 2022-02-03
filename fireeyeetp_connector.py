@@ -128,9 +128,8 @@ class FireeyeEtpConnector(BaseConnector):
 
         return RetVal(
             action_result.set_status(
-                phantom.APP_ERROR, "Status Code: {}. Error: Empty response and no information in the header".format(response.status_code)
-            ), None
-        )
+                phantom.APP_ERROR, "Status Code: {}. Error: Empty response and no information in the header".format(
+                    response.status_code)), None)
 
     def _process_html_response(self, response, action_result):
         # An html response, treat it like an error
@@ -329,6 +328,8 @@ class FireeyeEtpConnector(BaseConnector):
 
     def _paginator(self, endpoint, action_result, data, method="get", **kwargs):
         """ This function is used to handle the gathering of alerts for the list alerts action.
+            Note: the parameters need to be valid Python Requests parameters
+
         :param endpoint: API endpoint to use to get the alerts
         :param action results: Action results for Phantom
         :param data: dict of parameters to send to the API endpoint
@@ -372,6 +373,8 @@ class FireeyeEtpConnector(BaseConnector):
 
     def _paginator2(self, endpoint, action_result, data, limit=None, method="get", **kwargs):
         """ This function is used to handle the gathering of alerts for the on_poll action.
+            Note: these parameters need to be valid Python Requests parameters
+
         :param endpoint: API endpoint to use to get the alerts
         :param action results: Action results for Phantom
         :param data: dict of parameters to send to the API endpoint
@@ -502,7 +505,8 @@ class FireeyeEtpConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         try:
-            endpoint = FIREETEETP_GET_ALERT_ENDPOINT.format(alertId=self._handle_py_ver_compat_for_input_str(param.get('alert_id')))
+            endpoint = FIREETEETP_GET_ALERT_ENDPOINT.format(
+                    alertId=self._handle_py_ver_compat_for_input_str(param.get('alert_id')))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid 'alert_id' action parameter")
 
@@ -614,7 +618,8 @@ class FireeyeEtpConnector(BaseConnector):
             try:
                 lastModifiedDateTime = modified_date_param.strip()
                 lastModifiedDateTime = datetime.strptime(lastModifiedDateTime, "%Y-%m-%dT%H:%M:%S")
-                params['attributes']['lastModifiedDateTime'] = {"value": lastModifiedDateTime.strftime("%Y-%m-%dT%H:%M:%S"), "filter": ">="}
+                params['attributes']['lastModifiedDateTime'] = {"value": lastModifiedDateTime.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "filter": ">="}
             except:
                 return action_result.set_status(
                     phantom.APP_ERROR, "Date supplied in the modified_date field is not ISO8601 compliant. "
@@ -1153,7 +1158,8 @@ class FireeyeEtpConnector(BaseConnector):
             # Get the endtime from Phantom which is when the action was ran
             timestamp = datetime.utcfromtimestamp(param.get(phantom.APP_JSON_END_TIME) / 1000.0)
         except:
-            self.debug_print("'end_time' in Phantom could not be converted correctly. Use alternative time equal to datetime.utcnow()")
+            self.debug_print(
+                    "'end_time' in Phantom could not be converted correctly. Use alternative time equal to datetime.utcnow()")
         else:
             timestamp = datetime.utcnow()
 
@@ -1163,7 +1169,8 @@ class FireeyeEtpConnector(BaseConnector):
             try:
                 # Check the 'container_count' parameter
                 # If container count is not present just get 1
-                ret_val, limit = self._validate_integer(action_result, param.get(phantom.APP_JSON_CONTAINER_COUNT, 1), CONTAINER_COUNT_KEY)
+                ret_val, limit = self._validate_integer(action_result,
+                        param.get(phantom.APP_JSON_CONTAINER_COUNT, 1), CONTAINER_COUNT_KEY)
                 if phantom.is_fail(ret_val):
                     return action_result.get_status()
             except:
@@ -1298,6 +1305,22 @@ class FireeyeEtpConnector(BaseConnector):
 
         artifacts_list.append(temp_dict)
         return artifacts_list
+
+    def _get_fips_enabled(self):
+
+        try:
+            from phantom_common.install_info import is_fips_enabled
+        except ImportError:
+            return False
+
+        fips_enabled = is_fips_enabled()
+
+        if fips_enabled:
+            self.debug_print('FIPS is enabled')
+        else:
+            self.debug_print('FIPS is not enabled')
+
+        return fips_enabled
 
     def _create_dict_hash(self, input_dict):
         """ This function is used to generate the hash from dictionary.
