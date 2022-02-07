@@ -34,6 +34,8 @@ FIREEYEETP_LIST_QUARANTINED_EMAILS_ENDPOINT = "quarantine"
 
 # Constants relating to '_get_error_message_from_exception'
 ERR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters"
+ERR_ISO_FORMAT = "Date supplied in the '{}' field is not ISO8601 compliant. " \
+                 "Please make sure it is a valid ISO8601 datetime stamp"
 
 # Constants relating to '_validate_integer'
 VALID_INTEGER_MSG = "Please provide a valid integer value in the {}"
@@ -45,5 +47,5 @@ NUM_DAYS_KEY = "'num_days' action parameter"
 CONTAINER_COUNT_KEY = "'container_count' action parameter"
 
 # Constant for corrupt asset file
-FIREEYEETP_VAULT_STATE_FILE_CORRUPT_ERR = "Error occurred while loading the state file due to its unexpected format.\
+FIREEYEETP_STATE_FILE_CORRUPT_ERR = "Error occurred while loading the state file due to its unexpected format.\
      Resetting the state file with the default format. Please try again."
