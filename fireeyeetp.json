@@ -87,7 +87,7 @@
         {
             "action": "list alerts",
             "description": "Get a list of alerts from the ETP instance",
-            "verbose": "<p>The email status allows filtering by specific statuses. The valid values for email status are:</p><p><ul><li>ACE: Passthrough</li><li>quarantined</li><li>released</li><li>deleted</li><li>bcc:dropped</li><li>delivered (retroactive)</li><li>dropped (oob retroactive)</li></ul></p>",
+            "verbose": "<p>The email status allows filtering by specific statuses. The valid values for email status are:</p><p><ul><li>ACE: Passthrough</li><li>quarantined</li><li>released</li><li>deleted</li><li>bcc:dropped</li><li>delivered (retroactive)</li><li>dropped (oob retroactive)</li></ul></p><p>If the 'size' parameter value is greater than the mentioned range(1-200), then the max value of range(i.e: 200) will be in consideration.</p>",
             "type": "investigate",
             "identifier": "list_alerts",
             "read_only": true,
@@ -1049,7 +1049,7 @@
         {
             "action": "list email attributes",
             "description": "Get all the attributes from a list of email messages",
-            "verbose": "<p>Gets a list of messages that include specified message attributes that are accessible in the Email Security portal.</p>",
+            "verbose": "<p>Gets a list of messages that include specified message attributes that are accessible in the Email Security portal.</p><p>If the 'size' parameter value is greater than the mentioned range(1-200), then the max value of range(i.e: 200) will be in consideration.</p>",
             "type": "investigate",
             "identifier": "list_email_attributes",
             "read_only": true,
@@ -1646,7 +1646,7 @@
         {
             "action": "trace email",
             "description": "Search for Email Message by specifying one or more filters",
-            "verbose": "<p>At least one parameter must be filled out. All fields are filtered by the IN clause where applicable searching always an AND.</p><p>The modified date always uses the greater than or equal to. For example, if you want to search for the last 7 days, put a timestamp from 7 days ago. IE. 2017-10-03T00:00:00.000Z. Also, note that the DatetTime stamps need to be in UTC otherwise the results will be off. ETP assumes all DateTime stamps are in UTC.</p><p>The status field allows for the following values<ul><li>accepted</li><li>deleted</li><li>delivered</li><li>delivered (retroactive)</li><li>dropped</li><li>dropped oob</li><li>dropped (oob retroactive)</li><li>permanent failure</li><li>processing</li><li>quarantined</li><li>rejected</li><li>temporary failure</li></ul></p><p>The tags field allows for the following values<ul><li>auto_remediation</li><li>impersonation</li><li>manual_remediation</li></ul></p>",
+            "verbose": "<p>At least one parameter must be filled out. All fields are filtered by the IN clause where applicable searching always an AND.</p><p>The modified date always uses the greater than or equal to. For example, if you want to search for the last 7 days, put a timestamp from 7 days ago. IE. 2017-10-03T00:00:00.000Z. Also, note that the DatetTime stamps need to be in UTC otherwise the results will be off. ETP assumes all DateTime stamps are in UTC.</p><p>The status field allows for the following values<ul><li>accepted</li><li>deleted</li><li>delivered</li><li>delivered (retroactive)</li><li>dropped</li><li>dropped oob</li><li>dropped (oob retroactive)</li><li>permanent failure</li><li>processing</li><li>quarantined</li><li>rejected</li><li>temporary failure</li></ul></p><p>The tags field allows for the following values<ul><li>auto_remediation</li><li>impersonation</li><li>manual_remediation</li></ul></p><p>If the 'size' parameter value is greater than the mentioned range(1-300), then the max value of range(i.e: 300) will be in consideration.</p>",
             "type": "investigate",
             "identifier": "trace_email",
             "read_only": true,
@@ -2058,6 +2058,7 @@
         {
             "action": "trace message",
             "description": "Search for Email Message by specifying the Queue/Message-ID of the Downstream MTA or the Original Message-ID. At least one parameter must be filled out. All fields are filtered by the IN clause where applicable",
+            "verbose": "<p>If the 'size' parameter value is greater than the mentioned range(1-300), then the max value of range(i.e: 300) will be in consideration.</p>",
             "type": "investigate",
             "identifier": "trace_message",
             "read_only": true,
@@ -3094,7 +3095,7 @@
         {
             "action": "list quarantined emails",
             "description": "Get a list of quarantined emails from a given query filter",
-            "verbose": "<p>When specifying a date in either the to or from dates, the date is assumed to be in UTC. The ETP server runs on UTC so if you are not converting the timestamp to that time the results will be off.</p>",
+            "verbose": "<p>When specifying a date in either the to or from dates, the date is assumed to be in UTC. The ETP server runs on UTC so if you are not converting the timestamp to that time the results will be off.</p><p>If the 'size' parameter value is greater than the mentioned range(1-200), then the max value of range(i.e: 200) will be in consideration.</p>",
             "type": "investigate",
             "identifier": "list_quarantined_emails",
             "read_only": true,

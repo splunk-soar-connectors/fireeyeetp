@@ -573,6 +573,8 @@ class FireeyeEtpConnector(BaseConnector):
         ret_val, size = self._validate_integer(action_result, param.get('size'), SIZE_KEY, True)
         if phantom.is_fail(ret_val):
             return action_result.get_status()
+        if size > 300:
+            size = 300
         params['size'] = size
 
         endpoint = FIREETEETP_GET_MESSAGE_TRACE_ENDPOINT
@@ -671,6 +673,8 @@ class FireeyeEtpConnector(BaseConnector):
         ret_val, size = self._validate_integer(action_result, param.get('size'), SIZE_KEY, True)
         if phantom.is_fail(ret_val):
             return action_result.get_status()
+        if size > 300:
+            size = 300
         params['size'] = size
 
         endpoint = FIREETEETP_LIST_MESSAGE_ATTRIBUTES_ENDPOINT
