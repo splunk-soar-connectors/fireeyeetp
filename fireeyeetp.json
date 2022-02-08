@@ -3115,6 +3115,10 @@
                     "description": "Specific domain(s) to search by. Comma-separated list allowed",
                     "data_type": "string",
                     "allow_list": true,
+                    "primary": true,
+                    "contains": [
+                        "domain"
+                    ],
                     "order": 2
                 },
                 "email_server": {
@@ -3193,6 +3197,9 @@
                 {
                     "data_path": "action_result.parameter.domains",
                     "data_type": "string",
+                    "contains": [
+                        "domain"
+                    ],
                     "example_values": [
                         "domain.local"
                     ]
