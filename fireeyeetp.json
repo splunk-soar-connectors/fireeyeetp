@@ -1655,6 +1655,10 @@
                     "description": "Specific domain(s) to search by. Comma-separated list allowed",
                     "data_type": "string",
                     "allow_list": true,
+                    "primary": true,
+                    "contains": [
+                        "domain"
+                    ],
                     "order": 0
                 },
                 "modified_date": {
@@ -1712,6 +1716,9 @@
                     "data_type": "string",
                     "example_values": [
                         "domain.local"
+                    ],
+                    "contains": [
+                        "domain"
                     ]
                 },
                 {
@@ -2665,7 +2672,7 @@
         {
             "action": "remediate emails",
             "description": "Enqueues the message IDs provided in the request for remediation from the user's Office365 mailbox",
-            "verbose": "<p><b>Note: There is no <i>undo</i> functionality with this action!</b></p><p>The permissions the API account needs to have to use this function are, <b>etp.email_trace.update</b> and <b>etp.email_trace.delete</b>. If the API user does not have these permission you will not be able to use this action.</p><p></p><p>Any Any ETP Messages that have a status from the list given below are ignored and no action will be taken on them. <p><ul><li>Deleted</li><li>Dropped</li><li>Dropped(OOB)</li><li>Dropped (OOB Retroactive)</li><li>Rejected</li><li>Split</li><li>Permanent Failure</li></ul></p></p><p>The action_override parameter allows you to override the default action for remediating an email. It is important to note that if you select Delete, that it is a permanent delete in Office365.</p><p>The move_to parameter allows you to move the identified emails to a specific folder. If the folder is not in the user's mailbox, a new custom folder will be created and then the email will be moved into the new folder. Common Office365 folders are <p><ul><li>junk email</li><li>junkemail</li><li>deleted items</li><li>deleteditems</li></ul> These folder names are not case sensitive.</p>",
+            "verbose": "<p><b>Note: There is no <i>undo</i> functionality with this action!</b></p><p>The permissions the API account needs to have to use this function are, <b>etp.email_trace.update</b> and <b>etp.email_trace.delete</b>. If the API user does not have these permissions you will not be able to use this action.</p><p></p><p>Any ETP Messages that have a status from the list given below are ignored and no action will be taken on them. <p><ul><li>Deleted</li><li>Dropped</li><li>Dropped(OOB)</li><li>Dropped (OOB Retroactive)</li><li>Rejected</li><li>Split</li><li>Permanent Failure</li></ul></p></p><p>The action_override parameter allows you to override the default action for remediating an email. It is important to note that if you select Delete, that it is a permanent delete in Office365.</p><p>The move_to parameter allows you to move the identified emails to a specific folder. If the folder is not in the user's mailbox, a new custom folder will be created and then the email will be moved into the new folder. Common Office365 folders are <p><ul><li>junk email</li><li>junkemail</li><li>deleted items</li><li>deleteditems</li></ul> These folder names are not case sensitive.</p>",
             "type": "contain",
             "identifier": "remediate_emails",
             "read_only": false,
@@ -3154,14 +3161,14 @@
                     "order": 8
                 },
                 "size": {
-                    "description": "THe number of alerts to include in response. Valid range: 1-200 (ETP Defaults to 20)",
+                    "description": "The number of alerts to include in response. Valid range: 1-200 (ETP Defaults to 20)",
                     "data_type": "numeric",
                     "required": true,
                     "default": 20,
                     "order": 9
                 },
                 "tags": {
-                    "description": "Tag associated with email. Must be of the follow tags, auto_remediation, impersonation or manual_remediation. Comma-separated list allowed",
+                    "description": "Tag associated with email. Must be of the follow tags, auto_remediation, impersonation, or manual_remediation. Comma-separated list allowed",
                     "data_type": "string",
                     "allow_list": true,
                     "order": 10
