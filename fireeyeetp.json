@@ -3158,6 +3158,10 @@
                 "sender_domain": {
                     "description": "The senders domain to search by",
                     "data_type": "string",
+                    "primary": true,
+                    "contains": [
+                        "domain"
+                    ],
                     "order": 7
                 },
                 "subject": {
@@ -3247,7 +3251,10 @@
                 },
                 {
                     "data_path": "action_result.parameter.sender_domain",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "contains": [
+                        "domain"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.subject",
