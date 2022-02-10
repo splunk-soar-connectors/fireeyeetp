@@ -49,3 +49,6 @@ CONTAINER_COUNT_KEY = "'container_count' action parameter"
 # Constant for corrupt asset file
 FIREEYEETP_STATE_FILE_CORRUPT_ERR = "Error occurred while loading the state file due to its unexpected format.\
      Resetting the state file with the default format. Please try again."
+
+# Timeout
+FIREETEETP_DEFAULT_TIMEOUT = 30
