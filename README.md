@@ -2,24 +2,32 @@
 # Fireeye ETP
 
 Publisher: Robert Drouin  
-Connector Version: 1\.0\.4  
+Connector Version: 2\.0\.1  
 Product Vendor: Fireeye  
 Product Name: Fireeye Email Threat Prevention  
 Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 4\.9\.39220  
+Minimum Product Version: 5\.1\.0  
 
 Cloud Edition provides RESTful APIs for custom integration\. The APIs are provided for Advanced Threats, Email Trace, and Quarantine functionalities
 
-[comment]: # " File: readme.md"
+[comment]: # " File: README.md"
+[comment]: # "  Copyright (c) Robert Drouin, 2021-2022"
 [comment]: # ""
-[comment]: # "    Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt)"
+[comment]: # "  Licensed under the Apache License, Version 2.0 (the 'License');"
+[comment]: # "  you may not use this file except in compliance with the License."
+[comment]: # "  You may obtain a copy of the License at"
+[comment]: # "      http://www.apache.org/licenses/LICENSE-2.0"
+[comment]: # "  Unless required by applicable law or agreed to in writing, software distributed under"
+[comment]: # "  the License is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,"
+[comment]: # "  either express or implied. See the License for the specific language governing permissions"
+[comment]: # "  and limitations under the License."
 [comment]: # ""
 **Permissions**
 
 The following is a breakdown of the permission needed for the API user to be able to use the action
 in this app. These permissions are controlled in the IAM section of the ETP server. For information
 pertaining to setting up the API user refer to the API documentation located at
-https://docs.fireeye.com/docs/index.html#ETP.
+<https://docs.fireeye.com/docs/index.html#ETP> .
 
 For any API access, the following entitlements are required:
 
@@ -45,10 +53,10 @@ For accessing quarantine APIs, the following additional entitlements are require
 
 **Actions**
 
-It is important to know that all the actions in this app take affect on the Fireeye ETP side, with
-the exception of *remediating email* . For example, deleting a quarantined email is the action that
-deletes the email in the Fireeye ETP quarantined section, not in the Office365. Office365 may have
-other actions for quarantined emails from there own security suite
+It is important to know that all the actions in this app take affect on the Fireeye ETP side, except
+for *remediating email* . For example, deleting a quarantined email is the action that deletes the
+email in the Fireeye ETP quarantined section, not in the Office365. Office365 may have other actions
+for quarantined emails from their own security suite
 
 *Remediate Email action*
 
@@ -56,6 +64,16 @@ This action talks to the API for Office365 which will move/delete the email depe
 from the user. This action does not have an undo function and if the user selects action_overrite of
 delete, this email will be permanently deleted in the Office365 environment and not recoverable. Use
 cautiously!
+
+## Port Information
+
+The app uses HTTP/ HTTPS protocol for communicating with the Fireeye ETP server. Below are the
+default ports used by the Splunk SOAR Connector.
+
+| SERVICE NAME | TRANSPORT PROTOCOL | PORT |
+|--------------|--------------------|------|
+| http         | tcp                | 80   |
+| https        | tcp                | 443  |
 
 
 ### Configuration Variables
@@ -123,7 +141,7 @@ Get a list of alerts from the ETP instance
 Type: **investigate**  
 Read only: **True**
 
-<p>The email status allows filtering by specific statuses\. The valid values for email status are\:</p><p><ul><li>ACE\: Passthrough</li><li>quarantined</li><li>released</li><li>deleted</li><li>bcc\:dropped</li><li>delivered \(retroactive\)</li><li>dropped \(oob retroactive\)</li></ul></p>
+<p>The email status allows filtering by specific statuses\. The valid values for email status are\:</p><p><ul><li>ACE\: Passthrough</li><li>quarantined</li><li>released</li><li>deleted</li><li>bcc\:dropped</li><li>delivered \(retroactive\)</li><li>dropped \(oob retroactive\)</li></ul></p><p>If the 'size' parameter value is greater than the mentioned range\(1\-200\), then the max value of range\(i\.e\: 200\) will be in consideration\.</p>
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
@@ -286,7 +304,7 @@ Get all the attributes from a list of email messages
 Type: **investigate**  
 Read only: **True**
 
-<p>Gets a list of messages that include specified message attributes that are accessible in the Email Security portal\.</p>
+<p>Gets a list of messages that include specified message attributes that are accessible in the Email Security portal\.</p><p>If the 'size' parameter value is greater than the mentioned range\(1\-200\), then the max value of range\(i\.e\: 200\) will be in consideration\.</p>
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
@@ -382,12 +400,12 @@ Search for Email Message by specifying one or more filters
 Type: **investigate**  
 Read only: **True**
 
-<p>At least one parameter must be filled out\. All fields are filtered by the IN clause where applicable searching always an AND\.</p><p>The modified date always uses the greater than or equal to\. For example, if you want to search for the last 7 days, put a timestamp from 7 days ago\. IE\. 2017\-10\-03T00\:00\:00\.000Z\. Also, note that the DatetTime stamps need to be in UTC otherwise the results will be off\. ETP assumes all DateTime stamps are in UTC\.</p><p>The status field allows for the following values<ul><li>accepted</li><li>deleted</li><li>delivered</li><li>delivered \(retroactive\)</li><li>dropped</li><li>dropped oob</li><li>dropped \(oob retroactive\)</li><li>permanent failure</li><li>processing</li><li>quarantined</li><li>rejected</li><li>temporary failure</li></ul></p><p>The tags field allows for the following values<ul><li>auto\_remediation</li><li>impersonation</li><li>manual\_remediation</li></ul></p>
+<p>At least one parameter must be filled out\. All fields are filtered by the IN clause where applicable searching always an AND\.</p><p>The modified date always uses the greater than or equal to\. For example, if you want to search for the last 7 days, put a timestamp from 7 days ago\. IE\. 2017\-10\-03T00\:00\:00\.000Z\. Also, note that the DatetTime stamps need to be in UTC otherwise the results will be off\. ETP assumes all DateTime stamps are in UTC\.</p><p>The status field allows for the following values<ul><li>accepted</li><li>deleted</li><li>delivered</li><li>delivered \(retroactive\)</li><li>dropped</li><li>dropped oob</li><li>dropped \(oob retroactive\)</li><li>permanent failure</li><li>processing</li><li>quarantined</li><li>rejected</li><li>temporary failure</li></ul></p><p>The tags field allows for the following values<ul><li>auto\_remediation</li><li>impersonation</li><li>manual\_remediation</li></ul></p><p>If the 'size' parameter value is greater than the mentioned range\(1\-300\), then the max value of range\(i\.e\: 300\) will be in consideration\.</p>
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
-**domains** |  optional  | Specific domain\(s\) to search by\. Comma\-separated list allowed | string | 
+**domains** |  optional  | Specific domain\(s\) to search by\. Comma\-separated list allowed | string |  `domain` 
 **modified\_date** |  optional  | Datetime stamp to limit the search period | string | 
 **recipients** |  optional  | The recipients of the email\. The maximum allowed per request is 10\. Comma\-separated list allowed | string |  `email` 
 **sender** |  optional  | The sender of the email\. The maximum allowed per request is 10\. Comma\-separated list allowed | string |  `email` 
@@ -399,7 +417,7 @@ PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 #### Action Output
 DATA PATH | TYPE | CONTAINS
 --------- | ---- | --------
-action\_result\.parameter\.domains | string | 
+action\_result\.parameter\.domains | string |  `domain` 
 action\_result\.parameter\.modified\_date | string | 
 action\_result\.parameter\.recipients | string |  `email` 
 action\_result\.parameter\.sender | string |  `email` 
@@ -444,6 +462,8 @@ Search for Email Message by specifying the Queue/Message\-ID of the Downstream M
 
 Type: **investigate**  
 Read only: **True**
+
+<p>If the 'size' parameter value is greater than the mentioned range\(1\-300\), then the max value of range\(i\.e\: 300\) will be in consideration\.</p>
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
@@ -586,7 +606,7 @@ Enqueues the message IDs provided in the request for remediation from the user's
 Type: **contain**  
 Read only: **False**
 
-<p><b>Note\: There is no <i>undo</i> functionality with this action\!</b></p><p>The permissions the API account needs to have to use this function are, <b>etp\.email\_trace\.update</b> and <b>etp\.email\_trace\.delete</b>\. If the API user does not have these permission you will not be able to use this action\.</p><p></p><p>Any Any ETP Messages that have a status from the list given below are ignored and no action will be taken on them\. <p><ul><li>Deleted</li><li>Dropped</li><li>Dropped\(OOB\)</li><li>Dropped \(OOB Retroactive\)</li><li>Rejected</li><li>Split</li><li>Permanent Failure</li></ul></p></p><p>The action\_override parameter allows you to override the default action for remediating an email\. It is important to note that if you select Delete, that it is a permanent delete in Office365\.</p><p>The move\_to parameter allows you to move the identified emails to a specific folder\. If the folder is not in the user's mailbox, a new custom folder will be created and then the email will be moved into the new folder\. Common Office365 folders are <p><ul><li>junk email</li><li>junkemail</li><li>deleted items</li><li>deleteditems</li></ul> These folder names are not case sensitive\.</p>
+<p><b>Note\: There is no <i>undo</i> functionality with this action\!</b></p><p>The permissions the API account needs to have to use this function are, <b>etp\.email\_trace\.update</b> and <b>etp\.email\_trace\.delete</b>\. If the API user does not have these permissions you will not be able to use this action\.</p><p></p><p>Any ETP Messages that have a status from the list given below are ignored and no action will be taken on them\. <p><ul><li>Deleted</li><li>Dropped</li><li>Dropped\(OOB\)</li><li>Dropped \(OOB Retroactive\)</li><li>Rejected</li><li>Split</li><li>Permanent Failure</li></ul></p></p><p>The action\_override parameter allows you to override the default action for remediating an email\. It is important to note that if you select Delete, that it is a permanent delete in Office365\.</p><p>The move\_to parameter allows you to move the identified emails to a specific folder\. If the folder is not in the user's mailbox, a new custom folder will be created and then the email will be moved into the new folder\. Common Office365 folders are <p><ul><li>junk email</li><li>junkemail</li><li>deleted items</li><li>deleteditems</li></ul> These folder names are not case sensitive\.</p>
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
@@ -694,34 +714,34 @@ Get a list of quarantined emails from a given query filter
 Type: **investigate**  
 Read only: **True**
 
-<p>When specifying a date in either the to or from dates, the date is assumed to be in UTC\. The ETP server runs on UTC so if you are not converting the timestamp to that time the results will be off\.</p>
+<p>When specifying a date in either the to or from dates, the date is assumed to be in UTC\. The ETP server runs on UTC so if you are not converting the timestamp to that time the results will be off\.</p><p>If the 'size' parameter value is greater than the mentioned range\(1\-200\), then the max value of range\(i\.e\: 200\) will be in consideration\.</p>
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
 **from\_date** |  required  | Start date to use to search the by\. Date in YYYY\-MM\-DDTHH\:MM\:SS\.SSSSSS in UTC | string | 
 **to\_date** |  optional  | End date to use to search by\. Date in YYYY\-MM\-DDTHH\:MM\:SS\.SSSSSS in UTC | string | 
-**domains** |  optional  | Specific domain\(s\) to search by\. Comma\-separated list allowed | string | 
+**domains** |  optional  | Specific domain\(s\) to search by\. Comma\-separated list allowed | string |  `domain` 
 **email\_server** |  optional  | Specific email server to search by | string |  `ip` 
 **from** |  optional  | Email address of the sender to search by | string |  `email` 
 **reason** |  optional  | Reason the email was quarantined\. The strings must be of the following reasons, Action, Advanced Threat, Policy, Spam or Virus\. Comma\-separated list allowed | string | 
 **recipients** |  optional  | Recipient\(s\) to search by\. Comma\-separated list allowed | string |  `email` 
-**sender\_domain** |  optional  | The senders domain to search by | string | 
+**sender\_domain** |  optional  | The senders domain to search by | string |  `domain` 
 **subject** |  optional  | The subject of the email to search by | string | 
-**size** |  required  | THe number of alerts to include in response\. Valid range\: 1\-200 \(ETP Defaults to 20\) | numeric | 
-**tags** |  optional  | Tag associated with email\. Must be of the follow tags, auto\_remediation, impersonation or manual\_remediation\. Comma\-separated list allowed | string | 
+**size** |  required  | The number of alerts to include in response\. Valid range\: 1\-200 \(ETP Defaults to 20\) | numeric | 
+**tags** |  optional  | Tag associated with email\. Must be of the follow tags, auto\_remediation, impersonation, or manual\_remediation\. Comma\-separated list allowed | string | 
 
 #### Action Output
 DATA PATH | TYPE | CONTAINS
 --------- | ---- | --------
 action\_result\.parameter\.from\_date | string | 
 action\_result\.parameter\.to\_date | string | 
-action\_result\.parameter\.domains | string | 
+action\_result\.parameter\.domains | string |  `domain` 
 action\_result\.parameter\.email\_server | string |  `ip` 
 action\_result\.parameter\.from | string |  `email` 
 action\_result\.parameter\.reason | string | 
 action\_result\.parameter\.recipients | string |  `email` 
-action\_result\.parameter\.sender\_domain | string | 
+action\_result\.parameter\.sender\_domain | string |  `domain` 
 action\_result\.parameter\.subject | string | 
 action\_result\.parameter\.size | numeric | 
 action\_result\.parameter\.tags | string | 
