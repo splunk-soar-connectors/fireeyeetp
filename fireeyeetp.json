@@ -11,7 +11,7 @@
     "product_version_regex": ".*",
     "fips_compliant": false,
     "publisher": "Robert Drouin",
-    "license": "Copyright (c) Robert Drouin, 2021-2022",
+    "license": "Copyright (c) Robert Drouin, 2021-2025",
     "app_version": "2.0.1",
     "utctime_updated": "2022-02-03T16:50:10.000000Z",
     "package_name": "phantom_fireeyeetp",
