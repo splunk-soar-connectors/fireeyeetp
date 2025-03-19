@@ -1,6 +1,6 @@
 # File: fireeyeetp_consts.py
 #
-# Copyright (c) Robert Drouin, 2021-2022
+# Copyright (c) Robert Drouin, 2021-2025
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,8 +34,7 @@ FIREEYEETP_LIST_QUARANTINED_EMAILS_ENDPOINT = "quarantine"
 
 # Constants relating to '_get_error_message_from_exception'
 ERR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters"
-ERR_ISO_FORMAT = "Date supplied in the '{}' field is not ISO8601 compliant. " \
-                 "Please make sure it is a valid ISO8601 datetime stamp"
+ERR_ISO_FORMAT = "Date supplied in the '{}' field is not ISO8601 compliant. Please make sure it is a valid ISO8601 datetime stamp"
 
 # Constants relating to '_validate_integer'
 VALID_INTEGER_MSG = "Please provide a valid integer value in the {}"
