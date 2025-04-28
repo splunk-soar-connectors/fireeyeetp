@@ -1,7 +1,7 @@
 # Fireeye ETP
 
 Publisher: Robert Drouin \
-Connector Version: 2.0.1 \
+Connector Version: 2.0.2 \
 Product Vendor: Fireeye \
 Product Name: Fireeye Email Threat Prevention \
 Minimum Product Version: 5.1.0
