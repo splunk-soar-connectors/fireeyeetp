@@ -1,7 +1,7 @@
 # Fireeye ETP
 
 Publisher: Robert Drouin \
-Connector Version: 2.0.2 \
+Connector Version: 2.0.3 \
 Product Vendor: Fireeye \
 Product Name: Fireeye Email Threat Prevention \
 Minimum Product Version: 5.1.0
@@ -15,7 +15,11 @@ This table lists the configuration variables required to operate Fireeye ETP. Th
 VARIABLE | REQUIRED | TYPE | DESCRIPTION
 -------- | -------- | ---- | -----------
 **base_url** | required | string | The URL for your ETP instance |
-**api_key** | required | password | API key |
+**api_key** | optional | password | API key (leave blank if using OAuth) |
+**client_id** | optional | string | Auth Client ID |
+**client_secret** | optional | password | Auth Secret |
+**auth_scopes** | optional | string | Auth scopes (e.g. 'etp.conf.ro etp.trce.rw etp.admn.ro etp.domn.ro etp.accs.rw etp.quar.rw etp.domn.rw etp.rprt.rw etp.accs.ro etp.quar.ro etp.alrt.rw etp.rprt.ro etp.conf.rw etp.trce.ro etp.alrt.ro etp.admn.rw') |
+**verify_server_cert** | optional | boolean | Use SSL cert verification |
 
 ### Supported Actions
 

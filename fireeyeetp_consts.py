@@ -31,6 +31,7 @@ FIREEYEETP_RELEASE_QUARANTINED_EMAIL_ENDPOINT = "quarantine/release/{etp_message
 FIREEYEETP_BULK_DELETE_QUARANTINE_EMAILS_ENDPOINT = "quarantine/delete/"
 FIREEYEETP_DELETE_QUARANTINED_EMAIL_ENDPOINT = "quarantine/delete/{etp_message_id}"
 FIREEYEETP_LIST_QUARANTINED_EMAILS_ENDPOINT = "quarantine"
+FIREEYEETP_AUTH_URL = "https://auth.trellix.com/auth/realms/IAM/protocol/openid-connect/token"
 
 # Constants relating to '_get_error_message_from_exception'
 ERR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters"

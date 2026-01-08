@@ -12,8 +12,8 @@
     "fips_compliant": false,
     "publisher": "Robert Drouin",
     "license": "Copyright (c) Robert Drouin, 2021-2025",
-    "app_version": "2.0.2",
-    "utctime_updated": "2025-04-28T20:56:36.255626Z",
+    "app_version": "2.0.3",
+    "utctime_updated": "2025-11-07T23:17:00.000000Z",
     "package_name": "phantom_fireeyeetp",
     "main_module": "fireeyeetp_connector.py",
     "min_phantom_version": "5.1.0",
@@ -26,10 +26,36 @@
             "order": 0
         },
         "api_key": {
-            "description": "API key",
+            "description": "API key (leave blank if using OAuth)",
             "data_type": "password",
-            "required": true,
+            "required": false,
             "order": 1
+        },
+        "client_id": {
+            "description": "Auth Client ID",
+            "data_type": "string",
+            "required": false,
+            "order": 2
+        },
+        "client_secret": {
+            "description": "Auth Secret",
+            "data_type": "password",
+            "required": false,
+            "order": 3
+        },
+        "auth_scopes": {
+            "description": "Auth scopes (e.g. 'etp.conf.ro etp.trce.rw etp.admn.ro etp.domn.ro etp.accs.rw etp.quar.rw etp.domn.rw etp.rprt.rw etp.accs.ro etp.quar.ro etp.alrt.rw etp.rprt.ro etp.conf.rw etp.trce.ro etp.alrt.ro etp.admn.rw')",
+            "data_type": "string",
+            "required": false,
+            "order": 4,
+            "default": ""
+        },
+        "verify_server_cert": {
+            "description": "Use SSL cert verification",
+            "data_type": "boolean",
+            "required": false,
+            "order": 5,
+            "default": true
         }
     },
     "actions": [

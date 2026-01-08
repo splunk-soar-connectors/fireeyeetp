@@ -17,6 +17,7 @@
 import hashlib
 import json
 import os
+import re
 import sys
 import uuid
 from datetime import datetime, timedelta
@@ -50,6 +51,7 @@ class FireeyeEtpConnector(BaseConnector):
         # Do note that the app json defines the asset config, so please
         # modify this as you deem fit.
         self._base_url = None
+        self._verify_server_cert = True
 
     def _get_error_message_from_exception(self, e):
         """
@@ -211,8 +213,6 @@ class FireeyeEtpConnector(BaseConnector):
     def _make_rest_call(self, endpoint, action_result, method="get", **kwargs):
         # **kwargs can be any additional parameters that requests.request accepts
 
-        config = self.get_config()
-
         resp_json = None
 
         try:
@@ -227,7 +227,7 @@ class FireeyeEtpConnector(BaseConnector):
             err = "Please provide valid asset configuration and|or the action parameters"
             return RetVal(action_result.set_status(phantom.APP_ERROR, err), resp_json)
         try:
-            r = request_func(url, verify=config.get("verify_server_cert", False), headers=self._header, **kwargs)
+            r = request_func(url, verify=self._verify_server_cert, headers=self._header, **kwargs)
         except requests.exceptions.InvalidSchema:
             err = f"Error connecting to server. No connection adapters were found for {url}"
             return RetVal(action_result.set_status(phantom.APP_ERROR, err), resp_json)
@@ -1388,12 +1388,13 @@ class FireeyeEtpConnector(BaseConnector):
         optional_config_name = config.get('optional_config_name')
         """
 
-        self._header = {"x-fireeye-api-key": config.get("api_key", "")}
+        self._verify_server_cert = config.get("verify_server_cert", True)
 
-        # unused action parameter
-        # self._zip_password = config.get('zip_password', 'infected')
-
-        base_url = ""
+        api_key = config.get("api_key", "")
+        if isinstance(api_key, str) and api_key.strip():
+            self._header = {"x-fireeye-api-key": api_key.strip()}
+        else:
+            self._header = self.authenticate(config)
 
         # Check to see which instance the user selected. Use the appropriate URL.
         base_url = config.get("base_url").rstrip("/")
@@ -1401,6 +1402,28 @@ class FireeyeEtpConnector(BaseConnector):
         self._base_url = f"{base_url}/{FIREETEETP_API_PATH}"
 
         return phantom.APP_SUCCESS
+
+    def authenticate(self, config):
+        """Authenticate using client id and secret, return the header with bearer token"""
+        if not config.get("client_id") or not config.get("client_secret") or not config.get("auth_scopes"):
+            raise ValueError("One or more of client_id, client_secret or auth_scopes was left unset. Unable to get authentication token.")
+
+        auth_scopes_split_re = re.compile(r"[\s,]+")
+        auth_scopes_str = " ".join(auth_scopes_split_re.split(config.get("auth_scopes", "").strip()))
+        auth_headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        auth_data = {"grant_type": "client_credentials", "scope": auth_scopes_str}
+        response = requests.post(
+            FIREEYEETP_AUTH_URL,
+            headers=auth_headers,
+            auth=(config.get("client_id"), config.get("client_secret")),
+            data=auth_data,
+            verify=self._verify_server_cert,
+        )
+
+        response_data = response.json()
+        if response.status_code != 200:
+            raise ValueError(f"Authentication error: status_code={response.status_code}, data={response_data}")
+        return {"Authorization": f"{response_data['token_type']} {response_data['access_token']}"}
 
     def finalize(self):
         # Save the state, this data is saved across actions and app upgrades
