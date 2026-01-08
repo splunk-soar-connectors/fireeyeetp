@@ -1,3 +1,1 @@
 **Unreleased**
-* Make SSL certificate verification work when required
-* Add support for Trellix API token generation using client ID and secret
