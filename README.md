@@ -1,9 +1,9 @@
 # Fireeye ETP
 
-Publisher: Robert Drouin \
-Connector Version: 2.1.0 \
-Product Vendor: Fireeye \
-Product Name: Fireeye Email Threat Prevention \
+Publisher: Robert Drouin <br>
+Connector Version: 2.1.0 <br>
+Product Vendor: Fireeye <br>
+Product Name: Fireeye Email Threat Prevention <br>
 Minimum Product Version: 5.1.0
 
 Cloud Edition provides RESTful APIs for custom integration. The APIs are provided for Advanced Threats, Email Trace, and Quarantine functionalities
@@ -23,29 +23,29 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 
 ### Supported Actions
 
-[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity using the supplied configuration \
-[on poll](#action-on-poll) - Callback action for the on_poll ingest functionality \
-[list alerts](#action-list-alerts) - Get a list of alerts from the ETP instance \
-[get alert](#action-get-alert) - Get details about a specific alert from the ETP instance \
-[list email attributes](#action-list-email-attributes) - Get all the attributes from a list of email messages \
-[get email attributes](#action-get-email-attributes) - Get the attributes of a particular message with the specified Email Security message ID \
-[trace email](#action-trace-email) - Search for Email Message by specifying one or more filters \
-[trace message](#action-trace-message) - Search for Email Message by specifying the Queue/Message-ID of the Downstream MTA or the Original Message-ID. At least one parameter must be filled out. All fields are filtered by the IN clause where applicable \
-[download email](#action-download-email) - Download the email header as a text file and add it to the vault \
-[download pcap](#action-download-pcap) - Downloads all the PCAP files of the alert for a specified alert ID and add the files to the vault \
-[download malware files](#action-download-malware-files) - Download all malware files of the alert for a specified alert ID and add the files to the vault \
-[download case files](#action-download-case-files) - Download all case files of the alert for a specified alert ID and add the files to the vault \
-[remediate emails](#action-remediate-emails) - Enqueues the message IDs provided in the request for remediation from the user's Office365 mailbox \
-[get quarantined email](#action-get-quarantined-email) - Download the email file present in the quarantine for the given Email Security message ID and add it to the vault \
-[unquarantine email](#action-unquarantine-email) - Release the email file(s) present in the Quarantine within ETP \
-[delete quarantined email](#action-delete-quarantined-email) - Delete the email file(s) present in quarantine for the given Email Security message ID \
+[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity using the supplied configuration <br>
+[on poll](#action-on-poll) - Callback action for the on_poll ingest functionality <br>
+[list alerts](#action-list-alerts) - Get a list of alerts from the ETP instance <br>
+[get alert](#action-get-alert) - Get details about a specific alert from the ETP instance <br>
+[list email attributes](#action-list-email-attributes) - Get all the attributes from a list of email messages <br>
+[get email attributes](#action-get-email-attributes) - Get the attributes of a particular message with the specified Email Security message ID <br>
+[trace email](#action-trace-email) - Search for Email Message by specifying one or more filters <br>
+[trace message](#action-trace-message) - Search for Email Message by specifying the Queue/Message-ID of the Downstream MTA or the Original Message-ID. At least one parameter must be filled out. All fields are filtered by the IN clause where applicable <br>
+[download email](#action-download-email) - Download the email header as a text file and add it to the vault <br>
+[download pcap](#action-download-pcap) - Downloads all the PCAP files of the alert for a specified alert ID and add the files to the vault <br>
+[download malware files](#action-download-malware-files) - Download all malware files of the alert for a specified alert ID and add the files to the vault <br>
+[download case files](#action-download-case-files) - Download all case files of the alert for a specified alert ID and add the files to the vault <br>
+[remediate emails](#action-remediate-emails) - Enqueues the message IDs provided in the request for remediation from the user's Office365 mailbox <br>
+[get quarantined email](#action-get-quarantined-email) - Download the email file present in the quarantine for the given Email Security message ID and add it to the vault <br>
+[unquarantine email](#action-unquarantine-email) - Release the email file(s) present in the Quarantine within ETP <br>
+[delete quarantined email](#action-delete-quarantined-email) - Delete the email file(s) present in quarantine for the given Email Security message ID <br>
 [list quarantined emails](#action-list-quarantined-emails) - Get a list of quarantined emails from a given query filter
 
 ## action: 'test connectivity'
 
 Validate the asset configuration for connectivity using the supplied configuration
 
-Type: **test** \
+Type: **test** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -60,7 +60,7 @@ No Output
 
 Callback action for the on_poll ingest functionality
 
-Type: **ingest** \
+Type: **ingest** <br>
 Read only: **True**
 
 <p>Ingest alerts from ETP into Phantom. If 'start_time' is not specified, the default is past 10 days. If 'end_time' is not specified, the default is past 10 days.</p>
@@ -83,7 +83,7 @@ No Output
 
 Get a list of alerts from the ETP instance
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 <p>The email status allows filtering by specific statuses. The valid values for email status are:</p><p><ul><li>ACE: Passthrough</li><li>quarantined</li><li>released</li><li>deleted</li><li>bcc:dropped</li><li>delivered (retroactive)</li><li>dropped (oob retroactive)</li></ul></p><p>If the 'size' parameter value is greater than the mentioned range(1-200), then the max value of range(i.e: 200) will be in consideration.</p>
@@ -142,7 +142,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Get details about a specific alert from the ETP instance
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 <p>Get details about a specific alert by alert ID.</p>
@@ -252,7 +252,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Get all the attributes from a list of email messages
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 <p>Gets a list of messages that include specified message attributes that are accessible in the Email Security portal.</p><p>If the 'size' parameter value is greater than the mentioned range(1-200), then the max value of range(i.e: 200) will be in consideration.</p>
@@ -304,7 +304,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Get the attributes of a particular message with the specified Email Security message ID
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -354,7 +354,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Search for Email Message by specifying one or more filters
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 <p>At least one parameter must be filled out. All fields are filtered by the IN clause where applicable searching always an AND.</p><p>The modified date always uses the greater than or equal to. For example, if you want to search for the last 7 days, put a timestamp from 7 days ago. IE. 2017-10-03T00:00:00.000Z. Also, note that the DatetTime stamps need to be in UTC otherwise the results will be off. ETP assumes all DateTime stamps are in UTC.</p><p>The status field allows for the following values<ul><li>accepted</li><li>deleted</li><li>delivered</li><li>delivered (retroactive)</li><li>dropped</li><li>dropped oob</li><li>dropped (oob retroactive)</li><li>permanent failure</li><li>processing</li><li>quarantined</li><li>rejected</li><li>temporary failure</li></ul></p><p>The tags field allows for the following values<ul><li>auto_remediation</li><li>impersonation</li><li>manual_remediation</li></ul></p><p>If the 'size' parameter value is greater than the mentioned range(1-300), then the max value of range(i.e: 300) will be in consideration.</p>
@@ -420,7 +420,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Search for Email Message by specifying the Queue/Message-ID of the Downstream MTA or the Original Message-ID. At least one parameter must be filled out. All fields are filtered by the IN clause where applicable
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 <p>If the 'size' parameter value is greater than the mentioned range(1-300), then the max value of range(i.e: 300) will be in consideration.</p>
@@ -476,8 +476,8 @@ summary.total_objects_successful | numeric | | 1 |
 
 Download the email header as a text file and add it to the vault
 
-Type: **investigate** \
-Read only: **True**
+Type: **investigate** <br>
+Read only: **False**
 
 #### Action Parameters
 
@@ -501,8 +501,8 @@ summary.total_objects_successful | numeric | | 1 |
 
 Downloads all the PCAP files of the alert for a specified alert ID and add the files to the vault
 
-Type: **investigate** \
-Read only: **True**
+Type: **investigate** <br>
+Read only: **False**
 
 #### Action Parameters
 
@@ -526,8 +526,8 @@ summary.total_objects_successful | numeric | | 1 |
 
 Download all malware files of the alert for a specified alert ID and add the files to the vault
 
-Type: **investigate** \
-Read only: **True**
+Type: **investigate** <br>
+Read only: **False**
 
 <p>These files can contain viruses or other malicious software. Be cautious when opening these files!</p>
 
@@ -553,8 +553,8 @@ summary.total_objects_successful | numeric | | 1 |
 
 Download all case files of the alert for a specified alert ID and add the files to the vault
 
-Type: **investigate** \
-Read only: **True**
+Type: **investigate** <br>
+Read only: **False**
 
 #### Action Parameters
 
@@ -578,7 +578,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Enqueues the message IDs provided in the request for remediation from the user's Office365 mailbox
 
-Type: **contain** \
+Type: **contain** <br>
 Read only: **False**
 
 <p><b>Note: There is no <i>undo</i> functionality with this action!</b></p><p>The permissions the API account needs to have to use this function are, <b>etp.email_trace.update</b> and <b>etp.email_trace.delete</b>. If the API user does not have these permissions you will not be able to use this action.</p><p></p><p>Any ETP Messages that have a status from the list given below are ignored and no action will be taken on them. <p><ul><li>Deleted</li><li>Dropped</li><li>Dropped(OOB)</li><li>Dropped (OOB Retroactive)</li><li>Rejected</li><li>Split</li><li>Permanent Failure</li></ul></p></p><p>The action_override parameter allows you to override the default action for remediating an email. It is important to note that if you select Delete, that it is a permanent delete in Office365.</p><p>The move_to parameter allows you to move the identified emails to a specific folder. If the folder is not in the user's mailbox, a new custom folder will be created and then the email will be moved into the new folder. Common Office365 folders are <p><ul><li>junk email</li><li>junkemail</li><li>deleted items</li><li>deleteditems</li></ul> These folder names are not case sensitive.</p>
@@ -612,8 +612,8 @@ summary.total_objects_successful | numeric | | 1 |
 
 Download the email file present in the quarantine for the given Email Security message ID and add it to the vault
 
-Type: **investigate** \
-Read only: **True**
+Type: **investigate** <br>
+Read only: **False**
 
 #### Action Parameters
 
@@ -637,7 +637,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Release the email file(s) present in the Quarantine within ETP
 
-Type: **correct** \
+Type: **correct** <br>
 Read only: **False**
 
 #### Action Parameters
@@ -668,7 +668,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Delete the email file(s) present in quarantine for the given Email Security message ID
 
-Type: **correct** \
+Type: **correct** <br>
 Read only: **False**
 
 #### Action Parameters
@@ -698,7 +698,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Get a list of quarantined emails from a given query filter
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 <p>When specifying a date in either the to or from dates, the date is assumed to be in UTC. The ETP server runs on UTC so if you are not converting the timestamp to that time the results will be off.</p><p>If the 'size' parameter value is greater than the mentioned range(1-200), then the max value of range(i.e: 200) will be in consideration.</p>
@@ -764,7 +764,7 @@ ______________________________________________________________________
 
 Auto-generated Splunk SOAR Connector documentation.
 
-Copyright 2025 Splunk Inc.
+Copyright 2026 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
