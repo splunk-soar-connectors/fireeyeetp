@@ -252,7 +252,12 @@ class FireeyeEtpConnector(BaseConnector):
 
             os.makedirs(temp_dir)
 
-            file_path = os.path.join(temp_dir, filename)
+            safe_filename = re.sub(r"[^A-Za-z0-9._-]", "_", os.path.basename(str(filename)))
+            if not safe_filename or not safe_filename.strip("."):
+                safe_filename = "download.bin"
+            file_path = os.path.realpath(os.path.join(temp_dir, safe_filename))
+            if os.path.commonpath([os.path.realpath(temp_dir), file_path]) != os.path.realpath(temp_dir):
+                return action_result.set_status(phantom.APP_ERROR, "Invalid download filename"), None
 
             with open(file_path, "wb") as file_obj:
                 file_obj.write(data)
@@ -261,7 +266,7 @@ class FireeyeEtpConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, "Error while writing to temporary file", err), None
 
         # Adding pcap to vault
-        success, message, vault_id = vault.vault_add(container_id, file_path, filename)
+        success, message, vault_id = vault.vault_add(container_id, file_path, safe_filename)
 
         # Removing temporary directory created to download file
         try:
@@ -271,7 +276,7 @@ class FireeyeEtpConnector(BaseConnector):
 
         # Updating data with vault details
         if success:
-            vault_details = {phantom.APP_JSON_VAULT_ID: vault_id, "file_name": filename}
+            vault_details = {phantom.APP_JSON_VAULT_ID: vault_id, "file_name": safe_filename}
             return phantom.APP_SUCCESS, vault_details
 
         # Error while adding report to vault
