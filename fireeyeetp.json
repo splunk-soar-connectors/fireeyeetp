@@ -2416,7 +2416,7 @@
             "description": "Download the email header as a text file and add it to the vault",
             "type": "investigate",
             "identifier": "download_email",
-            "read_only": true,
+            "read_only": false,
             "parameters": {
                 "etp_message_id": {
                     "description": "The ID of the Email Security message to download",
@@ -2487,7 +2487,7 @@
             "description": "Downloads all the PCAP files of the alert for a specified alert ID and add the files to the vault",
             "type": "investigate",
             "identifier": "download_pcap",
-            "read_only": true,
+            "read_only": false,
             "parameters": {
                 "alert_id": {
                     "description": "The ID of the Email Security message to download",
@@ -2559,7 +2559,7 @@
             "verbose": "<p>These files can contain viruses or other malicious software. Be cautious when opening these files!</p>",
             "type": "investigate",
             "identifier": "download_malware_files",
-            "read_only": true,
+            "read_only": false,
             "parameters": {
                 "alert_id": {
                     "description": "The ID of the Email Security message to download",
@@ -2630,7 +2630,7 @@
             "description": "Download all case files of the alert for a specified alert ID and add the files to the vault",
             "type": "investigate",
             "identifier": "download_case_files",
-            "read_only": true,
+            "read_only": false,
             "parameters": {
                 "alert_id": {
                     "description": "The ID of the Email Security message to download",
@@ -2828,7 +2828,7 @@
             "description": "Download the email file present in the quarantine for the given Email Security message ID and add it to the vault",
             "type": "investigate",
             "identifier": "get_quarantined_email",
-            "read_only": true,
+            "read_only": false,
             "parameters": {
                 "etp_message_id": {
                     "description": "The ID of the Email Security message to download",
