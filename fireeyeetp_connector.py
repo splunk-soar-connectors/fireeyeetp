@@ -1,6 +1,6 @@
 # File: fireeyeetp_connector.py
 #
-# Copyright (c) Robert Drouin, 2021-2025
+# Copyright (c) Robert Drouin, 2021-2026
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import re
 import sys
 import uuid
 from datetime import datetime, timedelta
-from urllib.parse import unquote
+from urllib.parse import quote, unquote
 
 import phantom.app as phantom
 import pytz
@@ -252,7 +252,12 @@ class FireeyeEtpConnector(BaseConnector):
 
             os.makedirs(temp_dir)
 
-            file_path = os.path.join(temp_dir, filename)
+            safe_filename = re.sub(r"[^A-Za-z0-9._-]", "_", os.path.basename(str(filename)))
+            if not safe_filename or not safe_filename.strip("."):
+                safe_filename = "download.bin"
+            file_path = os.path.realpath(os.path.join(temp_dir, safe_filename))
+            if os.path.commonpath([os.path.realpath(temp_dir), file_path]) != os.path.realpath(temp_dir):
+                return action_result.set_status(phantom.APP_ERROR, "Invalid download filename"), None
 
             with open(file_path, "wb") as file_obj:
                 file_obj.write(data)
@@ -261,7 +266,7 @@ class FireeyeEtpConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, "Error while writing to temporary file", err), None
 
         # Adding pcap to vault
-        success, message, vault_id = vault.vault_add(container_id, file_path, filename)
+        success, message, vault_id = vault.vault_add(container_id, file_path, safe_filename)
 
         # Removing temporary directory created to download file
         try:
@@ -271,7 +276,7 @@ class FireeyeEtpConnector(BaseConnector):
 
         # Updating data with vault details
         if success:
-            vault_details = {phantom.APP_JSON_VAULT_ID: vault_id, "file_name": filename}
+            vault_details = {phantom.APP_JSON_VAULT_ID: vault_id, "file_name": safe_filename}
             return phantom.APP_SUCCESS, vault_details
 
         # Error while adding report to vault
@@ -458,7 +463,7 @@ class FireeyeEtpConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         try:
-            endpoint = FIREETEETP_GET_ALERT_ENDPOINT.format(alertId=param.get("alert_id"))
+            endpoint = FIREETEETP_GET_ALERT_ENDPOINT.format(alertId=quote(str(param.get("alert_id")), safe=""))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'alert_id' action parameter")
 
@@ -508,7 +513,7 @@ class FireeyeEtpConnector(BaseConnector):
 
         etp_message_id_param = param["etp_message_id"]
         try:
-            endpoint = FIREETEETP_GET_MESSAGE_ATTRIBUTES_ENDPOINT.format(etp_message_id=etp_message_id_param)
+            endpoint = FIREETEETP_GET_MESSAGE_ATTRIBUTES_ENDPOINT.format(etp_message_id=quote(str(etp_message_id_param), safe=""))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'etp_message_id' action parameter")
 
@@ -671,7 +676,7 @@ class FireeyeEtpConnector(BaseConnector):
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'etp_message_id' action parameter")
 
-        endpoint = FIREETEETP_GET_EMAIL_ENDPOINT.format(etp_message_id=etp_message_id_param)
+        endpoint = FIREETEETP_GET_EMAIL_ENDPOINT.format(etp_message_id=quote(str(etp_message_id_param), safe=""))
 
         # make rest call
         ret_val, response = self._make_rest_call(endpoint, action_result)
@@ -705,7 +710,7 @@ class FireeyeEtpConnector(BaseConnector):
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'alert_id' action parameter")
 
-        endpoint = FIREETEETP_GET_ALERT_PCAP_FILES_ENDPOINT.format(alertId=alert_id_param)
+        endpoint = FIREETEETP_GET_ALERT_PCAP_FILES_ENDPOINT.format(alertId=quote(str(alert_id_param), safe=""))
 
         # make rest call
         ret_val, response = self._make_rest_call(endpoint, action_result, method="post", json=data, stream=True)
@@ -738,7 +743,7 @@ class FireeyeEtpConnector(BaseConnector):
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'alert_id' action parameter")
 
-        endpoint = FIREETEETP_GET_ALERT_MALWARE_FILES_ENDPOINT.format(alertId=alert_id_param)
+        endpoint = FIREETEETP_GET_ALERT_MALWARE_FILES_ENDPOINT.format(alertId=quote(str(alert_id_param), safe=""))
 
         # make rest call
         ret_val, response = self._make_rest_call(endpoint, action_result, method="post", json=data, stream=True)
@@ -771,7 +776,7 @@ class FireeyeEtpConnector(BaseConnector):
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'alert_id' action parameter")
 
-        endpoint = FIREETEETP_GET_ALERT_CASE_FILES_ENDPOINT.format(alertId=alert_id_param)
+        endpoint = FIREETEETP_GET_ALERT_CASE_FILES_ENDPOINT.format(alertId=quote(str(alert_id_param), safe=""))
 
         # make rest call
         ret_val, response = self._make_rest_call(endpoint, action_result, method="post", json=data, stream=True)
@@ -839,7 +844,7 @@ class FireeyeEtpConnector(BaseConnector):
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'etp_message_id' action parameter")
 
-        endpoint = FIREEYEETP_GET_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=etp_message_id_param)
+        endpoint = FIREEYEETP_GET_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=quote(str(etp_message_id_param), safe=""))
 
         # make rest call
         ret_val, response = self._make_rest_call(endpoint, action_result)
@@ -874,7 +879,7 @@ class FireeyeEtpConnector(BaseConnector):
                 data["message_ids"] = ",".join(ids)
                 endpoint = FIREEYEETP_BULK_RELEASE_QUARANTINE_EMAILS_ENDPOINT
             else:
-                endpoint = FIREEYEETP_RELEASE_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=ids)
+                endpoint = FIREEYEETP_RELEASE_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=quote(str(ids[0]), safe=""))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'etp_message_id' action parameter")
 
@@ -914,7 +919,7 @@ class FireeyeEtpConnector(BaseConnector):
                 data["message_ids"] = ",".join(ids)
                 endpoint = FIREEYEETP_BULK_DELETE_QUARANTINE_EMAILS_ENDPOINT
             else:
-                endpoint = FIREEYEETP_DELETE_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=ids)
+                endpoint = FIREEYEETP_DELETE_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=quote(str(ids[0]), safe=""))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'etp_message_id' action parameter")
 
