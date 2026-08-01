@@ -1,1 +1,3 @@
 **Unreleased**
+
+* Rejected invalid ETP identifiers before constructing action request paths (PSAAS-31389).
