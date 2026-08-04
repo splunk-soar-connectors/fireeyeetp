@@ -21,7 +21,7 @@ import re
 import sys
 import uuid
 from datetime import datetime, timedelta
-from urllib.parse import quote, unquote
+from urllib.parse import unquote
 
 import phantom.app as phantom
 import pytz
@@ -33,6 +33,7 @@ from phantom.base_connector import BaseConnector
 
 # Usage of the consts file is recommended
 from fireeyeetp_consts import *
+from fireeyeetp_path import quote_etp_identifier
 
 
 class RetVal(tuple):
@@ -463,7 +464,7 @@ class FireeyeEtpConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         try:
-            endpoint = FIREETEETP_GET_ALERT_ENDPOINT.format(alertId=quote(str(param.get("alert_id")), safe=""))
+            endpoint = FIREETEETP_GET_ALERT_ENDPOINT.format(alertId=quote_etp_identifier(param.get("alert_id")))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'alert_id' action parameter")
 
@@ -513,7 +514,7 @@ class FireeyeEtpConnector(BaseConnector):
 
         etp_message_id_param = param["etp_message_id"]
         try:
-            endpoint = FIREETEETP_GET_MESSAGE_ATTRIBUTES_ENDPOINT.format(etp_message_id=quote(str(etp_message_id_param), safe=""))
+            endpoint = FIREETEETP_GET_MESSAGE_ATTRIBUTES_ENDPOINT.format(etp_message_id=quote_etp_identifier(etp_message_id_param))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'etp_message_id' action parameter")
 
@@ -673,10 +674,9 @@ class FireeyeEtpConnector(BaseConnector):
         # Set the file name for the vault
         try:
             filename = f"raw_email_{etp_message_id_param}.txt"
+            endpoint = FIREETEETP_GET_EMAIL_ENDPOINT.format(etp_message_id=quote_etp_identifier(etp_message_id_param))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'etp_message_id' action parameter")
-
-        endpoint = FIREETEETP_GET_EMAIL_ENDPOINT.format(etp_message_id=quote(str(etp_message_id_param), safe=""))
 
         # make rest call
         ret_val, response = self._make_rest_call(endpoint, action_result)
@@ -707,10 +707,9 @@ class FireeyeEtpConnector(BaseConnector):
         # Set the file name for the vault
         try:
             filename = f"{alert_id_param}_pcap.zip"
+            endpoint = FIREETEETP_GET_ALERT_PCAP_FILES_ENDPOINT.format(alertId=quote_etp_identifier(alert_id_param))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'alert_id' action parameter")
-
-        endpoint = FIREETEETP_GET_ALERT_PCAP_FILES_ENDPOINT.format(alertId=quote(str(alert_id_param), safe=""))
 
         # make rest call
         ret_val, response = self._make_rest_call(endpoint, action_result, method="post", json=data, stream=True)
@@ -740,10 +739,9 @@ class FireeyeEtpConnector(BaseConnector):
         # Set the file name for the vault
         try:
             filename = f"{alert_id_param}_malware.zip"
+            endpoint = FIREETEETP_GET_ALERT_MALWARE_FILES_ENDPOINT.format(alertId=quote_etp_identifier(alert_id_param))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'alert_id' action parameter")
-
-        endpoint = FIREETEETP_GET_ALERT_MALWARE_FILES_ENDPOINT.format(alertId=quote(str(alert_id_param), safe=""))
 
         # make rest call
         ret_val, response = self._make_rest_call(endpoint, action_result, method="post", json=data, stream=True)
@@ -773,10 +771,9 @@ class FireeyeEtpConnector(BaseConnector):
         # Set the file name for the vault
         try:
             filename = f"{alert_id_param}_case.zip"
+            endpoint = FIREETEETP_GET_ALERT_CASE_FILES_ENDPOINT.format(alertId=quote_etp_identifier(alert_id_param))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'alert_id' action parameter")
-
-        endpoint = FIREETEETP_GET_ALERT_CASE_FILES_ENDPOINT.format(alertId=quote(str(alert_id_param), safe=""))
 
         # make rest call
         ret_val, response = self._make_rest_call(endpoint, action_result, method="post", json=data, stream=True)
@@ -841,10 +838,9 @@ class FireeyeEtpConnector(BaseConnector):
         # Set the file name for the vault
         try:
             filename = f"quarantined_email_{etp_message_id_param}.txt"
+            endpoint = FIREEYEETP_GET_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=quote_etp_identifier(etp_message_id_param))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'etp_message_id' action parameter")
-
-        endpoint = FIREEYEETP_GET_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=quote(str(etp_message_id_param), safe=""))
 
         # make rest call
         ret_val, response = self._make_rest_call(endpoint, action_result)
@@ -879,7 +875,7 @@ class FireeyeEtpConnector(BaseConnector):
                 data["message_ids"] = ",".join(ids)
                 endpoint = FIREEYEETP_BULK_RELEASE_QUARANTINE_EMAILS_ENDPOINT
             else:
-                endpoint = FIREEYEETP_RELEASE_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=quote(str(ids[0]), safe=""))
+                endpoint = FIREEYEETP_RELEASE_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=quote_etp_identifier(ids[0]))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'etp_message_id' action parameter")
 
@@ -919,7 +915,7 @@ class FireeyeEtpConnector(BaseConnector):
                 data["message_ids"] = ",".join(ids)
                 endpoint = FIREEYEETP_BULK_DELETE_QUARANTINE_EMAILS_ENDPOINT
             else:
-                endpoint = FIREEYEETP_DELETE_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=quote(str(ids[0]), safe=""))
+                endpoint = FIREEYEETP_DELETE_QUARANTINED_EMAIL_ENDPOINT.format(etp_message_id=quote_etp_identifier(ids[0]))
         except Exception:
             return action_result.set_status(phantom.APP_ERROR, "Please provide a valid value in 'etp_message_id' action parameter")
 
